@@ -14,8 +14,9 @@ export default async function connectToDatabase(): Promise<Db> {
     return cachedDB;
   }
   const opts = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
+    directConnection: true,
   };
   console.info(formatLog("No client found! Creating a new one."));
   // If no connection is cached, create a new one
