@@ -1,18 +1,33 @@
-// ./pages/[hash].tsx
- 
-import { NextApiRequest, NextApiResponse, NextPage } from "next";
+ import { NextApiRequest, NextApiResponse, NextPage } from "next";
 import Head from "next/head";
 import connectToDatabase from "../mongodb";
 import { COLLECTION_NAMES } from "../types";
  
 export async function getServerSideProps(request: NextApiRequest) {
   const hash = request.query.hash as string;
+  const isTest = request.query.test as string;
   const database = await connectToDatabase();
-  const campaign = await database
-    .collection(COLLECTION_NAMES["url-info"])
-    .findOne({ uid: hash });
+  const urlInfoCollection = database.collection(COLLECTION_NAMES["url-info"])
+  const campaign = await urlInfoCollection.findOne({ uid: hash });
  
   if (campaign) {
+    if (!isTest) {
+      const from = request.query.from ?? "unknown";
+      const keyFrom = `from_${from}`
+      const updateObj = {
+        "$set": {
+          latestClick: new Date(),
+        }
+      }
+      updateObj["$set"][`${keyFrom}`] = (Number(campaign[`${keyFrom}`]) || 0) + 1
+      await urlInfoCollection.updateOne(
+        {
+          _id: campaign._id,
+        },
+        {...updateObj},
+      );
+    }
+
     return {
       redirect: {
         destination: campaign.link,

@@ -1,5 +1,3 @@
-// ./api/create-link.ts
- 
 import { NextApiRequest, NextApiResponse } from "next";
 import connectToDatabase from "../../mongodb";
 import { customAlphabet } from "nanoid";
