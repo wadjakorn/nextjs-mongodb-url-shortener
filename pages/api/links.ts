@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { urlInfColl } from "./_coll";
+import { urlInfColl } from "../../db/url-info-collection";
 
 export default async function ListLink(
   request: NextApiRequest,

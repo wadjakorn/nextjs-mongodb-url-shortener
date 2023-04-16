@@ -1,5 +1,5 @@
-import { connectToDatabase } from "../../mongodb";
-import { COLLECTION_NAMES, UrlInfo } from "../../types";
+import { connectToDatabase } from "./mongodb";
+import { COLLECTION_NAMES, UrlInfo } from "../types";
 
 export async function urlInfColl() {
     const database = await connectToDatabase();

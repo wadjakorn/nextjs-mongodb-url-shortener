@@ -1,5 +1,5 @@
 import { Db, MongoClient } from "mongodb";
-import { formatLog } from "./utils";
+import { formatLog } from "../utils";
  
 let cachedDB: Db | null = null;
  

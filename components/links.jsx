@@ -15,7 +15,7 @@ export default function Links() {
     }, [])
 
     if (isLoading) return <p>Loading...</p>
-    if (!data) return <p>No links data</p>
+    if (!data) return <p>No data</p>
 
     return (
         <table>

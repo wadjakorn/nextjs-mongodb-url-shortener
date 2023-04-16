@@ -1,7 +1,7 @@
  import { NextApiRequest, NextApiResponse, NextPage } from "next";
 import Head from "next/head";
 import { UpdateUrlInfo, Visit } from "../types";
-import { urlInfColl } from "./api/_coll";
+import { urlInfColl } from "../db/url-info-collection";
 import { formatLog } from "../utils";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
