@@ -97,7 +97,7 @@ async function update(
       uid: hash,
     });
     if (linkExists) {
-      const updateObj = new UpdateUrlInfo();
+      const updateObj = new UpdateUrlInfo(linkExists);
       if (link) {
         updateObj.setLink(link);
       }

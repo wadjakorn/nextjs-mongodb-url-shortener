@@ -1,25 +1,20 @@
  import { NextApiRequest, NextApiResponse, NextPage } from "next";
 import Head from "next/head";
-import { connectToDatabase } from "../mongodb";
-import { COLLECTION_NAMES } from "../types";
+import { UpdateUrlInfo } from "../types";
+import { urlInfColl } from "./api/_coll";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const hash = request.query.hash as string;
   const isTest = request.query.test as string;
-  const database = await connectToDatabase();
-  const urlInfoCollection = database.collection(COLLECTION_NAMES["url-info"])
+  const urlInfoCollection = await urlInfColl();
   const urlInfo = await urlInfoCollection.findOne({ uid: hash });
  
   if (urlInfo) {
     if (!isTest) {
-      const from = request.query.from ?? "unknown";
-      const updateObj = {
-        "$set": {
-          latestClick: new Date(),
-          visit: {}
-        }
-      }
-      updateObj["$set"]["visit"][`${from}`] = (Number(urlInfo["visit"][`${from}`]) || 0) + 1
+      const from = request.query.from as string ?? "unknown";
+      const updateObj = new UpdateUrlInfo(urlInfo);
+      updateObj.setLatestClick(new Date());
+      updateObj.incVisitFrom(from)
       // TODO: save visit history
       await urlInfoCollection.updateOne(
         {

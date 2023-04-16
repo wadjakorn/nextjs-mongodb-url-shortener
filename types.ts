@@ -46,17 +46,30 @@ export class UrlInfo {
 }
 
 export class UpdateUrlInfo {
-    constructor() {
-      this.$set = {};
+    urlInfo: UrlInfo;
+    constructor(existsInfo: UrlInfo) {
+        this.urlInfo = existsInfo;
+        this.$set = {};
     }
     $set: {
         link?: string;
         title?: string;
+        latestClick?: Date;
+        visit?: Map<string, number>;
     }
     setLink(link: string) {
         this.$set.link = link;
     }
     setTitle(title: string) { 
         this.$set.title = title;
+    }
+    setLatestClick(latestClick: Date) {
+        this.$set.latestClick = latestClick;
+    }
+    setVisit(visit: Map<string, number>) {
+        this.$set.visit = visit;
+    }
+    incVisitFrom(visitFrom: string) {
+        this.$set.visit[`${visitFrom}`] = (this.urlInfo.visit[`${visitFrom}`] ?? 0) + 1;
     }
 }
