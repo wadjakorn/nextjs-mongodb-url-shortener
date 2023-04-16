@@ -20,7 +20,7 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
         {
           _id: urlInfo._id,
         },
-        {...updateObj},
+        {...updateObj.getUpdateObj()},
       );
     }
 

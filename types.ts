@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, UpdateFilter } from "mongodb";
 
 export enum COLLECTION_NAMES {
   "url-info" = "url-info",
@@ -46,9 +46,9 @@ export class UrlInfo {
 }
 
 export class UpdateUrlInfo {
-    urlInfo: UrlInfo;
+    _urlInfo: UrlInfo;
     constructor(existsInfo: UrlInfo) {
-        this.urlInfo = existsInfo;
+        this._urlInfo = existsInfo;
         this.$set = {};
     }
     $set: {
@@ -56,6 +56,11 @@ export class UpdateUrlInfo {
         title?: string;
         latestClick?: Date;
         visit?: Map<string, number>;
+    }
+    getUpdateObj(): UpdateFilter<UrlInfo> {
+        return {
+            $set: this.$set,
+        };
     }
     setLink(link: string) {
         this.$set.link = link;
@@ -70,6 +75,9 @@ export class UpdateUrlInfo {
         this.$set.visit = visit;
     }
     incVisitFrom(visitFrom: string) {
-        this.$set.visit[`${visitFrom}`] = (this.urlInfo.visit[`${visitFrom}`] ?? 0) + 1;
+        if (!this.$set.visit) {
+            this.$set.visit = new Map<string, number>([]);
+        }
+        this.$set.visit[`${visitFrom}`] = (this._urlInfo.visit[`${visitFrom}`] ?? 0) + 1;
     }
 }
