@@ -22,6 +22,7 @@ export async function update(
     });
     if (linkExists) {
       const updateObj = new UpdateUrlInfo(linkExists);
+      updateObj.setLatestClick(new Date());
       if (link) {
         updateObj.setLink(link);
       }

@@ -4,6 +4,13 @@ export enum COLLECTION_NAMES {
   "url-info" = "url-info",
 }
 
+export class RespData {
+    type: string;
+    code: number;
+    totalLinks: number;
+    data: UrlInfo[];
+}
+
 export class UrlInfo {
     _id: ObjectId;
     uid: string;
@@ -12,6 +19,7 @@ export class UrlInfo {
     shortUrl: string;
     createdAt: Date;
     visit: Visit;
+    latestClick: Date;
     constructor(uid: string, link: string, title: string, shortUrl: string, createdAt: Date) {
         this.uid = uid;
         this.link = link;
@@ -37,6 +45,9 @@ export class UrlInfo {
     }
     setVisit(visit: Visit) {
         this.visit = visit;
+    }
+    setLatestClick(latestClick: Date) {
+        this.latestClick = latestClick;
     }
 }
 

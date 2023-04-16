@@ -1,0 +1,12 @@
+.f-center {
+  display: flex;
+  justify-content: center;
+}
+
+.t-container {
+  width: 100%;
+}
+
+.url-width {
+  max-width: 320px;
+}

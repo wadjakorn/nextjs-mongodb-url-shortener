@@ -22,7 +22,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "components/links.jsx"  ],
+, "components/Links.tsx"  ],
   "exclude": [
     "node_modules"
   ]

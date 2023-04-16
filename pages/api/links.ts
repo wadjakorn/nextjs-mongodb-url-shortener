@@ -21,11 +21,13 @@ export default async function ListLink(
  
   try {
     const coll = await urlInfColl()
+    const count = await coll.countDocuments();
     const list = await coll.find().sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
     response.status(200);
     response.send({
       type: "success",
-      code: 201,
+      code: 200,
+      totalLinks: count,
       data: list,
     });
   } catch (e: any) {

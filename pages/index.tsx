@@ -1,6 +1,12 @@
 import Head from 'next/head'
-import Links from '../components/links'
 import styles from '../styles/Home.module.css'
+import dynamic from 'next/dynamic'
+
+const TheTable = dynamic(
+    () => import('../components/Links'),
+    { ssr: false, loading: () => <p>Loading...</p> }
+  )
+
 
 export default function Home() {
   return (
@@ -16,7 +22,7 @@ export default function Home() {
           Shorten URLs
         </h1>
 
-        <Links />
+        <TheTable />
       </main>
     </div>
   )
