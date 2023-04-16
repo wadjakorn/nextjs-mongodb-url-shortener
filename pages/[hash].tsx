@@ -1,9 +1,9 @@
  import { NextApiRequest, NextApiResponse, NextPage } from "next";
 import Head from "next/head";
-import connectToDatabase from "../mongodb";
+import { connectToDatabase } from "../mongodb";
 import { COLLECTION_NAMES } from "../types";
  
-export async function getServerSideProps(request: NextApiRequest) {
+export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const hash = request.query.hash as string;
   const isTest = request.query.test as string;
   const database = await connectToDatabase();

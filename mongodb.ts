@@ -1,14 +1,9 @@
-// ./mongodb.ts
- 
 import { Db, MongoClient } from "mongodb";
 import { formatLog } from "./utils";
  
-// Create cached connection variable
 let cachedDB: Db | null = null;
  
-// A function for connecting to MongoDB,
-export default async function connectToDatabase(): Promise<Db> {
-  // If the database connection is cached, use it instead of creating a new connection
+export async function connectToDatabase(): Promise<Db> {
   if (cachedDB) {
     console.info(formatLog("Using cached client!"));
     return cachedDB;

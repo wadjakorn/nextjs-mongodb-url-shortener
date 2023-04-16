@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import connectToDatabase from "../../mongodb";
+import { connectToDatabase } from "../../mongodb";
 import { COLLECTION_NAMES } from "../../types";
 
 export default async function ListLink(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
-  const apiKey = request.headers["api-key"] as string;
+  // const apiKey = request.headers["api-key"] as string;
   if (request.method !== "GET") {
     return response.status(405).json({
       type: "Error",
@@ -24,7 +24,6 @@ export default async function ListLink(
     const database = await connectToDatabase();
     const urlInfoCollection = database.collection(COLLECTION_NAMES["url-info"]);
     const list = await urlInfoCollection.find().sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
-
     response.status(200);
     response.send({
       type: "success",
