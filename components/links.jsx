@@ -40,10 +40,10 @@ export default function Links() {
                         <td>{link.link}</td>
                         <td>{link.shortUrl}</td>
                         <td>{link.createdAt}</td>
-                        <td>{link.visit?.yt}</td>
-                        <td>{link.visit?.fb}</td>
-                        <td>{link.visit?.tt}</td>
-                        <td>{link.visit?.ig}</td>
+                        <td>{link.visit?.yt ?? 0}</td>
+                        <td>{link.visit?.fb ?? 0}</td>
+                        <td>{link.visit?.tt ?? 0}</td>
+                        <td>{link.visit?.ig ?? 0}</td>
                     </tr>
                 ))}
             </tbody>
