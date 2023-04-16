@@ -11,19 +11,14 @@ export class UrlInfo {
     title: string;
     shortUrl: string;
     createdAt: Date;
-    visit: Map<string, number>;
+    visit: Visit;
     constructor(uid: string, link: string, title: string, shortUrl: string, createdAt: Date) {
         this.uid = uid;
         this.link = link;
         this.title = title;
         this.shortUrl = shortUrl;
         this.createdAt = createdAt;
-        this.visit = new Map<string, number>([
-            ["yt", 0],
-            ["fb", 0],
-            ["tt", 0],
-            ["ig", 0],
-        ]);
+        this.visit = new Visit();
     }
     setUid(uid: string) {
         this.uid = uid;
@@ -40,7 +35,7 @@ export class UrlInfo {
     setCreatedAt(createdAt: Date) {
         this.createdAt = createdAt;
     }
-    setVisit(visit: Map<string, number>) {
+    setVisit(visit: Visit) {
         this.visit = visit;
     }
 }
@@ -55,7 +50,7 @@ export class UpdateUrlInfo {
         link?: string;
         title?: string;
         latestClick?: Date;
-        visit?: Map<string, number>;
+        visit?: Visit;
     }
     getUpdateObj(): UpdateFilter<UrlInfo> {
         return {
@@ -71,13 +66,28 @@ export class UpdateUrlInfo {
     setLatestClick(latestClick: Date) {
         this.$set.latestClick = latestClick;
     }
-    setVisit(visit: Map<string, number>) {
+    setVisit(visit: Visit) {
         this.$set.visit = visit;
     }
-    incVisitFrom(visitFrom: string) {
+    incVisitFrom(visitFrom: keyof Visit) {
         if (!this.$set.visit) {
-            this.$set.visit = new Map<string, number>([]);
+            this.$set.visit = new Visit();
         }
         this.$set.visit[`${visitFrom}`] = (this._urlInfo.visit[`${visitFrom}`] ?? 0) + 1;
+    }
+}
+
+export class Visit {
+    yt: number;
+    fb: number;
+    tt: number;
+    ig: number;
+    unknown: number;
+    constructor(yt: number = 0, fb: number = 0, tt: number = 0, ig: number = 0, unknown: number = 0) {
+        this.yt = yt;
+        this.fb = fb;
+        this.tt = tt;
+        this.ig = ig;
+        this.unknown = unknown;
     }
 }

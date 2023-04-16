@@ -1,7 +1,8 @@
  import { NextApiRequest, NextApiResponse, NextPage } from "next";
 import Head from "next/head";
-import { UpdateUrlInfo } from "../types";
+import { UpdateUrlInfo, Visit } from "../types";
 import { urlInfColl } from "./api/_coll";
+import { formatLog } from "../utils";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const hash = request.query.hash as string;
@@ -11,10 +12,12 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
  
   if (urlInfo) {
     if (!isTest) {
-      const from = request.query.from as string ?? "unknown";
+      const from = (request.query.from ?? "unknown") as keyof Visit;
+      console.info(formatLog(`from: ${from}`));
       const updateObj = new UpdateUrlInfo(urlInfo);
       updateObj.setLatestClick(new Date());
       updateObj.incVisitFrom(from)
+      console.info(updateObj.$set);
       // TODO: save visit history
       await urlInfoCollection.updateOne(
         {
