@@ -8,21 +8,22 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   const isTest = request.query.test as string;
   const database = await connectToDatabase();
   const urlInfoCollection = database.collection(COLLECTION_NAMES["url-info"])
-  const campaign = await urlInfoCollection.findOne({ uid: hash });
+  const urlInfo = await urlInfoCollection.findOne({ uid: hash });
  
-  if (campaign) {
+  if (urlInfo) {
     if (!isTest) {
       const from = request.query.from ?? "unknown";
-      const keyFrom = `from_${from}`
       const updateObj = {
         "$set": {
           latestClick: new Date(),
+          visit: {}
         }
       }
-      updateObj["$set"][`${keyFrom}`] = (Number(campaign[`${keyFrom}`]) || 0) + 1
+      updateObj["$set"]["visit"][`${from}`] = (Number(urlInfo["visit"][`${from}`]) || 0) + 1
+      // TODO: save visit history
       await urlInfoCollection.updateOne(
         {
-          _id: campaign._id,
+          _id: urlInfo._id,
         },
         {...updateObj},
       );
@@ -30,7 +31,7 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
 
     return {
       redirect: {
-        destination: campaign.link,
+        destination: urlInfo.link,
         permanent: false,
       },
     };

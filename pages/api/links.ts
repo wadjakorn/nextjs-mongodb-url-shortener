@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { connectToDatabase } from "../../mongodb";
-import { COLLECTION_NAMES } from "../../types";
+import { urlInfColl } from "./_coll";
 
 export default async function ListLink(
   request: NextApiRequest,
@@ -21,9 +20,8 @@ export default async function ListLink(
   const skip = (page - 1) * limit;
  
   try {
-    const database = await connectToDatabase();
-    const urlInfoCollection = database.collection(COLLECTION_NAMES["url-info"]);
-    const list = await urlInfoCollection.find().sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
+    const coll = await urlInfColl()
+    const list = await coll.find().sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
     response.status(200);
     response.send({
       type: "success",

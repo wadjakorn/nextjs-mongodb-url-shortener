@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { connectToDatabase } from "../../mongodb";
 import { customAlphabet } from "nanoid";
-import { COLLECTION_NAMES } from "../../types";
+import { UrlInfo, UpdateUrlInfo } from "../../types";
+import { urlInfColl } from "./_coll";
  
 const characters =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -38,7 +38,8 @@ async function create(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
-  const { link, customHash, title } = request.body;
+  // TODO: customDomain, tags
+  const { link, title, customHash, /*customDomain, tags*/ } = request.body;
   if (!link) {
     response.status(400).send({
       type: "Error",
@@ -48,21 +49,15 @@ async function create(
     return;
   }
   try {
-    const database = await connectToDatabase();
-    const urlInfoCollection = database.collection(COLLECTION_NAMES["url-info"]);
+    const coll = await urlInfColl();
     const hash = customHash ?? getHash();
-    const linkExists = await urlInfoCollection.findOne({
+    const linkExists = await coll.findOne({
       "$or": [{ link }, { uid: hash }],
     });
     const shortUrl = `${process.env.HOST}/${hash}`;
     if (!linkExists) {
-      await urlInfoCollection.insertOne({
-        title,
-        link,
-        uid: hash,
-        shortUrl: shortUrl,
-        createdAt: new Date(),
-      });
+      const urlInfo = new UrlInfo(hash, link, title, shortUrl, new Date());
+      await coll.insertOne(urlInfo);
     }
     response.status(201);
     response.send({
@@ -97,22 +92,19 @@ async function update(
     return;
   }
   try {
-    const database = await connectToDatabase();
-    const urlInfoCollection = database.collection(COLLECTION_NAMES["url-info"]);
-    const linkExists = await urlInfoCollection.findOne({
+    const coll = await urlInfColl();
+    const linkExists = await coll.findOne({
       uid: hash,
     });
     if (linkExists) {
-      const updateObj = {
-        "$set": {},
-      }
+      const updateObj = new UpdateUrlInfo();
       if (link) {
-        updateObj["$set"]['link'] = link;
+        updateObj.setLink(link);
       }
       if (title) {
-        updateObj["$set"]['title'] = title;
+        updateObj.setTitle(title);
       }
-      await urlInfoCollection.updateOne({
+      await coll.updateOne({
         uid: hash,
       }, {...updateObj});
       response.status(201);

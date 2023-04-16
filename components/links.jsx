@@ -22,26 +22,28 @@ export default function Links() {
             <thead>
                 <tr>
                     <th>uid</th>
+                    <th>title</th>
                     <th>link</th>
                     <th>shortUrl</th>
                     <th>createdAt</th>
-                    <th>from_yt</th>
-                    <th>from_fb</th>
-                    <th>from_tt</th>
-                    <th>from_ig</th>
+                    <th>youtube</th>
+                    <th>facebook</th>
+                    <th>tiktok</th>
+                    <th>instagram</th>
                 </tr>
             </thead>
             <tbody>
                 {data.map((link) => (
                     <tr key={link._id}>
                         <td>{link.uid}</td>
+                        <td>{link.title}</td>
                         <td>{link.link}</td>
                         <td>{link.shortUrl}</td>
                         <td>{link.createdAt}</td>
-                        <td>{link.from_yt}</td>
-                        <td>{link.from_fb}</td>
-                        <td>{link.from_tt}</td>
-                        <td>{link.from_ig}</td>
+                        <td>{link.visit?.yt}</td>
+                        <td>{link.visit?.fb}</td>
+                        <td>{link.visit?.tt}</td>
+                        <td>{link.visit?.ig}</td>
                     </tr>
                 ))}
             </tbody>
