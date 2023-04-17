@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { customAlphabet } from "nanoid";
-import { UrlInfo } from "../../types";
-import { urlInfColl } from "../../db/url-info-collection";
+import { UrlInfo } from "../../../types";
+import { urlInfColl } from "../../../db/url-info-collection";
  
 const characters =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const getHash = customAlphabet(characters, 4);
  
-export async function create(
+export async function createLink(
   request: NextApiRequest,
   response: NextApiResponse
 ) {

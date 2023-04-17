@@ -21,8 +21,9 @@ export default async function ListLink(
  
   try {
     const coll = await urlInfColl()
-    const count = await coll.countDocuments();
-    const list = await coll.find().sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
+    const filter = { deletedAt: { $exists: false } }
+    const count = await coll.countDocuments(filter);
+    const list = await coll.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
     response.status(200);
     response.send({
       type: "success",

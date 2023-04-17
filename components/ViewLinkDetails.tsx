@@ -6,7 +6,7 @@ import { IconButton } from './IconButton';
 import { CopyIcon } from './CopyIcon';
 import { copy } from '../utils';
 
-export function LinkDetails(props: { item: UrlInfo }) {
+export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
     const [urlInfo, setUrlInfo] = React.useState(null);
 
     useEffect(() => {
@@ -18,12 +18,10 @@ export function LinkDetails(props: { item: UrlInfo }) {
     }, [props])
 
     const closeHandler = () => {
-        setUrlInfo(null);
+        props.onClose();
     };
 
     return (
-        <div>
-        {/* <Text>{ urlInfo?.uid }</Text> */}
         <Modal
             closeButton
             blur
@@ -92,19 +90,9 @@ export function LinkDetails(props: { item: UrlInfo }) {
                         </Grid>
                     </Grid.Container>
                 </div>
-                {/* <Input 
-                    clearable
-                    label="Original Link"
-                    initialValue={urlInfo?.link} 
-                /> */}
-                
             </Modal.Body>
             <Modal.Footer>
-            {/* <Button auto flat color="error" onPress={closeHandler}>
-                Close
-            </Button> */}
             </Modal.Footer>
         </Modal>
-        </div>
     );
 }

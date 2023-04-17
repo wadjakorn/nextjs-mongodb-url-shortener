@@ -11,6 +11,17 @@ export class RespData {
     data: UrlInfo[];
 }
 
+export class CreateRespData {
+    type: string;
+    code: number;
+    data: UrlInfo;
+}
+
+export class DeleteRespData {
+    type: string;
+    code: number;
+}
+
 export class UrlInfo {
     _id: ObjectId;
     uid: string;
@@ -110,5 +121,18 @@ export class Visit {
         this.tt = tt;
         this.ig = ig;
         this.unknown = unknown;
+    }
+}
+
+export class CreateLinkInputs {
+    link: string;
+    title: string;
+    tags: string[];
+    customHash: string;
+    constructor(link: string = null, title: string = null, tags: string[] = [], customHash: string = null) {
+        this.link = link;
+        this.title = title;
+        this.tags = tags;
+        this.customHash = customHash;
     }
 }

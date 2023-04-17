@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { UpdateUrlInfo } from "../../types";
-import { urlInfColl } from "../../db/url-info-collection";
-// import { formatLog } from "../../utils";
+import { UrlInfo } from "../../../types";
+import { urlInfColl } from "../../../db/url-info-collection";
+import { UpdateFilter } from "mongodb";
 
-export async function update(
+export async function deleteLink(
   request: NextApiRequest,
-  response: NextApiResponse
+  response: NextApiResponse,
 ) {
-  const { link, hash, title, tags } = request.body;
+  const hash = request.query.hash as string;
   if (!hash) {
     response.status(400).send({
       type: "Error",
@@ -22,30 +22,19 @@ export async function update(
       uid: hash,
     });
     if (linkExists) {
-      const updateObj = new UpdateUrlInfo(linkExists);
-      updateObj.setLatestClick(new Date());
-      if (link) {
-        updateObj.setLink(link);
-      }
-      if (title) {
-        updateObj.setTitle(title);
-      }
-      if (tags) {
-        updateObj.setTags(tags);
+      const updateObj: UpdateFilter<UrlInfo> = {
+        $set: {
+          deletedAt: new Date(),
+        },
       }
       console.info({updateObj});
       await coll.updateOne({
         uid: hash,
-      }, {...updateObj.getUpdateObj()});
-      response.status(201);
+      }, updateObj);
+      response.status(200);
       response.send({
         type: "success",
-        code: 201,
-        data: {
-          shortUrl: linkExists.shortUrl,
-          link: linkExists.link,
-          title: linkExists.title,
-        },
+        code: 200,
       });
     } else {
       response.status(404);

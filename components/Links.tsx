@@ -1,21 +1,30 @@
 import { useState, useEffect } from 'react'
 import { Table, Row, Col, Text, Link, Button, Popover, Badge } from '@nextui-org/react';
-import { UrlInfo, RespData } from '../types';
+import { UrlInfo, RespData, CreateRespData, DeleteRespData } from '../types';
 import { IconButton } from './IconButton';
 import { EyeIcon } from './EyeIcon';
 import { CopyIcon } from './CopyIcon';
 import { useRouter } from 'next/router'
 import styles from '../styles/Table.module.css'
-import { LinkDetails } from './LinkDetails';
+import { ViewLinkDetails } from './ViewLinkDetails';
 import { copy } from '../utils';
+import { CreateLink } from './CreateLink';
+import { DeleteIcon } from './DeleteIcon';
+import { DeleteLink } from './DeleteLink';
 
 export default function Links() {
     const router = useRouter()
-    const [selectedItem, setSelected] = useState<UrlInfo>(null)
+    const [showCreateForm, setShowCreateForm] = useState(false)
+    const [showItemDetails, setShowItemDetails] = useState<UrlInfo>(null)
     const [resp, setResp] = useState<RespData>(null)
     const [totalPages, setTotalPages] = useState(0)
     const [page, setPage] = useState(Number(router.query.page ?? 1))
     const [limit, setLimit] = useState(10)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<string>(null)
+
+    const [createdResp, setCreatedResp] = useState<CreateRespData>(null)
+    const [deletedResp, setDeletedResp] = useState<DeleteRespData>(null)
+
     useEffect(() => {
         fetch(`/api/links?limit=${limit}&page=${page}`)
             .then((res) => res.json())
@@ -24,7 +33,7 @@ export default function Links() {
                 setResp(resp)
                 setTotalPages(Math.ceil(resp.totalLinks / limit))
             })
-    }, [page, limit])
+    }, [page, limit, createdResp, deletedResp])
 
     if (!resp) return <p>Loading...</p>
     if (resp && !resp?.data?.length) return <p>No data</p>
@@ -112,17 +121,16 @@ export default function Links() {
         )
     }
 
-    function openLinkDetails(item: UrlInfo) {
-        setSelected(item)
-    }
-
     function renderActions(item: UrlInfo) {
         return (
         <Table.Cell>
             <Row justify="center" align="center">
                 <Col css={{ d: "flex" }}>
-                    <IconButton onClick={() => openLinkDetails(item)}>
+                    <IconButton onClick={() => setShowItemDetails(item)}>
                         <EyeIcon size={20} fill="#979797" />
+                    </IconButton>
+                    <IconButton css={{ ml:'20px' }} onClick={() => setShowDeleteConfirm(item.uid)}>
+                        <DeleteIcon size={20} fill="#FF0080" />
                     </IconButton>
                 </Col>
             </Row>
@@ -152,10 +160,18 @@ export default function Links() {
    
     return (
         <div className={styles['t-container']}>
-            <LinkDetails item={selectedItem}></LinkDetails>
+            <ViewLinkDetails item={showItemDetails} onClose={() => setShowItemDetails(null)} />
+            <CreateLink open={showCreateForm} onClose={(resp: CreateRespData) => { if (!!resp) {setCreatedResp(resp)} setShowCreateForm(false) }} />
+            <DeleteLink uid={showDeleteConfirm} onClose={(resp: DeleteRespData) => { if (!!resp) {setDeletedResp(resp)} setShowDeleteConfirm(null) }} />
+            <div style={{ display: 'flex', justifyContent: 'end'}}>
+                <Button onPress={() => setShowCreateForm(true)}>
+                    + Create Short Link
+                </Button>
+            </div>
             <Table 
                 lined
-                aria-label="Example table with static content"
+                aria-label='table'
+                aria-labelledby='table'
                 selectionMode="single"
                 css={{
                     height: "auto",

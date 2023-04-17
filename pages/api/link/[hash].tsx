@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createLink } from "./_private/_create";
+import { deleteLink } from "../_private/_delete";
+import { updateLink } from "../_private/_update";
  
-export default async function CreateLink(
+export default async function DeleteLink(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
@@ -12,15 +13,17 @@ export default async function CreateLink(
       message: "Unauthorized",
     });
   }
-  if (!["POST"].includes(request.method)) {
+  if (!["PATCH","DELETE"].includes(request.method)) {
     return response.status(405).json({
       type: "Error",
       code: 405,
-      message: "Only POST method is accepted on this route",
+      message: "Only PATCH/DELETE method is accepted on this route",
     });
   }
   switch (request.method) {
-    case "POST":
-      return createLink(request, response);
+    case "PATCH":
+      return updateLink(request, response);
+    case "DELETE":
+      return deleteLink(request, response);
   }
 }
