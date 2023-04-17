@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Table, Row, Col, Text, Link, Button, Popover } from '@nextui-org/react';
+import { Table, Row, Col, Text, Link, Button, Popover, Badge } from '@nextui-org/react';
 import { UrlInfo, RespData } from '../types';
 import { IconButton } from './IconButton';
 import { EyeIcon } from './EyeIcon';
@@ -138,6 +138,14 @@ export default function Links() {
             )
         } else if (columnKey === "actions") {
             return renderActions(item);
+        } else if (columnKey === 'tags') {
+            return (
+                <Table.Cell>
+                    {item.tags?.map((tag) => (
+                        <Badge key={tag} className={styles['tag']}>{tag}</Badge>
+                    ))}
+                </Table.Cell>
+            )
         }
         return <Table.Cell><Text className={styles['col-width']}>{item[columnKey]}</Text></Table.Cell>
     }

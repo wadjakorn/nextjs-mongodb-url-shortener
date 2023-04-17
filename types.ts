@@ -20,13 +20,16 @@ export class UrlInfo {
     createdAt: Date;
     visit: Visit;
     latestClick: Date;
-    constructor(uid: string, link: string, title: string, shortUrl: string, createdAt: Date) {
+    tags: string[];
+    constructor(uid: string, link: string, title: string, shortUrl: string, createdAt: Date, tags: string[] = []) {
         this.uid = uid;
         this.link = link;
         this.title = title;
         this.shortUrl = shortUrl;
         this.createdAt = createdAt;
         this.visit = new Visit();
+        this.latestClick = null;
+        this.tags = tags;
     }
     setUid(uid: string) {
         this.uid = uid;
@@ -49,6 +52,9 @@ export class UrlInfo {
     setLatestClick(latestClick: Date) {
         this.latestClick = latestClick;
     }
+    setTags(tags: string[]) {
+        this.tags = tags;
+    }
 }
 
 export class UpdateUrlInfo {
@@ -62,6 +68,7 @@ export class UpdateUrlInfo {
         title?: string;
         latestClick?: Date;
         visit?: Visit;
+        tags?: string[];
     }
     getUpdateObj(): UpdateFilter<UrlInfo> {
         return {
@@ -85,6 +92,9 @@ export class UpdateUrlInfo {
             this.$set.visit = new Visit();
         }
         this.$set.visit[`${visitFrom}`] = (this._urlInfo.visit[`${visitFrom}`] ?? 0) + 1;
+    }
+    setTags(tags: string[]) {
+        this.$set.tags = tags;
     }
 }
 

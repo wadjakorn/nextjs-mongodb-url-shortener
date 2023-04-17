@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Input, Modal, Text, Grid, Popover, Link } from "@nextui-org/react";
+import { Badge, Modal, Text, Grid, Popover, Link } from "@nextui-org/react";
 import { UrlInfo } from "../types";
 import { FromRef } from './FromRef';
 import { IconButton } from './IconButton';
@@ -42,20 +42,10 @@ export function LinkDetails(props: { item: UrlInfo }) {
             </Modal.Header>
             <Modal.Body>
                 <div>
-                    <Grid.Container gap={2}>
-                        <Grid>
-                            <FromRef color="primary" text="Facebook" count={urlInfo?.visit?.fb} />
-                        </Grid>
-                        <Grid>
-                            <FromRef color="error" text="Youtube" count={urlInfo?.visit?.yt} />
-                        </Grid>
-                        <Grid>
-                            <FromRef color="secondary" text="Instagram" count={urlInfo?.visit?.ig} />
-                        </Grid>
-                        <Grid>
-                            <FromRef color="warning" text="Tiktok" count={urlInfo?.visit?.tt} />
-                        </Grid>
-                    </Grid.Container>
+                    <Text size={14}>Tags</Text>
+                    {urlInfo?.tags?.map((tag: string) => (
+                        <Badge key={tag}>{tag}</Badge>
+                    ))}
                 </div>
                 <Text size={14}>Shorten Link</Text>
                 <div style={{ display: 'flex', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden',  }}>
@@ -84,6 +74,23 @@ export function LinkDetails(props: { item: UrlInfo }) {
                         </Popover.Content>
                     </Popover>
                     <Link target='_blank' href={urlInfo?.link}>{urlInfo?.link}</Link>
+                </div>
+                <div>
+                    <Text size={14}>Visits</Text>
+                    <Grid.Container gap={2}>
+                        <Grid>
+                            <FromRef color="primary" text="Facebook" count={urlInfo?.visit?.fb} />
+                        </Grid>
+                        <Grid>
+                            <FromRef color="error" text="Youtube" count={urlInfo?.visit?.yt} />
+                        </Grid>
+                        <Grid>
+                            <FromRef color="secondary" text="Instagram" count={urlInfo?.visit?.ig} />
+                        </Grid>
+                        <Grid>
+                            <FromRef color="warning" text="Tiktok" count={urlInfo?.visit?.tt} />
+                        </Grid>
+                    </Grid.Container>
                 </div>
                 {/* <Input 
                     clearable

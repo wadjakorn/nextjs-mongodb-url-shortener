@@ -1,12 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { UpdateUrlInfo } from "../../types";
 import { urlInfColl } from "../../db/url-info-collection";
- 
+// import { formatLog } from "../../utils";
+
 export async function update(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
-  const { link, hash, title } = request.body;
+  const { link, hash, title, tags } = request.body;
   if (!hash) {
     response.status(400).send({
       type: "Error",
@@ -29,9 +30,13 @@ export async function update(
       if (title) {
         updateObj.setTitle(title);
       }
+      if (tags) {
+        updateObj.setTags(tags);
+      }
+      console.info({updateObj});
       await coll.updateOne({
         uid: hash,
-      }, {...updateObj});
+      }, {...updateObj.getUpdateObj()});
       response.status(201);
       response.send({
         type: "success",

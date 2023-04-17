@@ -12,7 +12,7 @@ export async function create(
   response: NextApiResponse
 ) {
   // TODO: customDomain, tags
-  const { link, title, customHash, /*customDomain, tags*/ } = request.body;
+  const { link, title, customHash, tags /*customDomain*/ } = request.body;
   if (!link) {
     response.status(400).send({
       type: "Error",
@@ -29,7 +29,7 @@ export async function create(
     });
     const shortUrl = `${process.env.HOST}/${hash}`;
     if (!linkExists) {
-      const urlInfo = new UrlInfo(hash, link, title, shortUrl, new Date());
+      const urlInfo = new UrlInfo(hash, link, title, shortUrl, new Date(), tags);
       await coll.insertOne(urlInfo);
     }
     response.status(201);
