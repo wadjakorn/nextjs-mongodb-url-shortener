@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Table, Row, Col, Tooltip, Text, Button, Collapse } from '@nextui-org/react';
+import { Table, Row, Col, Text, Link, Button, Popover } from '@nextui-org/react';
 import { UrlInfo, RespData } from '../types';
 import { IconButton } from './IconButton';
 import { EyeIcon } from './EyeIcon';
-import { EditIcon } from './EditIcon';
-import { DeleteIcon } from './DeleteIcon';
+import { CopyIcon } from './CopyIcon';
 import { useRouter } from 'next/router'
 import styles from '../styles/Table.module.css'
+import { LinkDetails } from './LinkDetails';
+import { copy } from '../utils';
 
 export default function Links() {
     const router = useRouter()
+    const [selectedItem, setSelected] = useState<UrlInfo>(null)
     const [resp, setResp] = useState<RespData>(null)
     const [totalPages, setTotalPages] = useState(0)
     const [page, setPage] = useState(Number(router.query.page ?? 1))
@@ -24,49 +26,26 @@ export default function Links() {
             })
     }, [page, limit])
 
-    if (!resp?.data?.length) return <p>No data</p>
+    if (!resp) return <p>Loading...</p>
+    if (resp && !resp?.data?.length) return <p>No data</p>
 
     const columns = [
     {
         key: "title",
         label: "title",
     },
-    // {
-    //     key: "link",
-    //     label: "original URL",
-    // },
     {
         key: "shortUrl",
         label: "short URL",
-    },
-    {
-        key: "copy",
-        label: "copy",
     },
     {
         key: "tags",
         label: "tags",
     },
     {
-        key: ".visit.yt",
-        label: "yt",
+        key: "actions",
+        label: "actions",
     },
-    {
-        key: ".visit.fb",
-        label: "fb",
-    },
-    {
-        key: ".visit.tt",
-        label: "tt",
-    },
-    {
-        key: ".visit.ig",
-        label: "tg",
-    },
-    // {
-    //     key: "actions",
-    //     label: "actions",
-    // },
     ];
 
     const paging = (gotoPage: number) => {
@@ -111,17 +90,69 @@ export default function Links() {
             >next</Button>
         </Button.Group>)
     }
+
+
+    function renderShortlink(urlInfo: UrlInfo) {
+        return (
+            <Table.Cell>
+                <div style={{ display: 'flex' }}>
+                    <Popover placement='left'>
+                        <Popover.Trigger>
+                            <IconButton onClick={() => copy(urlInfo.shortUrl)}>
+                                <CopyIcon size={20} fill="#979797" style={{ marginRight: '10px' }} />
+                            </IconButton>
+                        </Popover.Trigger>
+                        <Popover.Content>
+                            <Text css={{ p: "$5" }}>Copied!</Text>
+                        </Popover.Content>
+                    </Popover>
+                    <Link target='_blank' href={urlInfo.shortUrl}>{urlInfo.shortUrl}</Link>
+                </div>
+            </Table.Cell>
+        )
+    }
+
+    function openLinkDetails(item: UrlInfo) {
+        setSelected(item)
+    }
+
+    function renderActions(item: UrlInfo) {
+        return (
+        <Table.Cell>
+            <Row justify="center" align="center">
+                <Col css={{ d: "flex" }}>
+                    <IconButton onClick={() => openLinkDetails(item)}>
+                        <EyeIcon size={20} fill="#979797" />
+                    </IconButton>
+                </Col>
+            </Row>
+        </Table.Cell>
+        )
+    }
+
+    function renderCell(item: UrlInfo, columnKey: string) {
+        if (columnKey[0] === ".") {
+            return <Table.Cell>{getNested(item, columnKey)}</Table.Cell>
+        } else if (columnKey === 'shortUrl') {
+            return (renderShortlink(item)
+            )
+        } else if (columnKey === "actions") {
+            return renderActions(item);
+        }
+        return <Table.Cell><Text className={styles['col-width']}>{item[columnKey]}</Text></Table.Cell>
+    }
    
     return (
         <div className={styles['t-container']}>
+            <LinkDetails item={selectedItem}></LinkDetails>
             <Table 
                 lined
                 aria-label="Example table with static content"
+                selectionMode="single"
                 css={{
                     height: "auto",
                     minWidth: "100%",
                 }}
-                selectionMode="single"
             >
                 <Table.Header columns={columns}>
                     {(column) => (
@@ -146,6 +177,8 @@ export default function Links() {
     )
 }
 
+
+
 function getNested(urlInfo: UrlInfo, key: string) {
     const keys = key.slice(1).split('.')
     return getNestedVal(urlInfo, keys)
@@ -156,71 +189,3 @@ function getNestedVal(data: any, keys: string[]) {
         return getNestedVal(data[keys[0]], keys.slice(1))
     return data
 }
-
-function renderCell(item: UrlInfo, columnKey: string) {
-        if (columnKey[0] === ".") {
-            return <Table.Cell>{getNested(item, columnKey)}</Table.Cell>
-        } else if (columnKey === "copy") {
-            return (<Table.Cell>
-                <IconButton onClick={() => navigator.clipboard.writeText(item.shortUrl)}>
-                    <Tooltip
-                        content={"copied!"}
-                        trigger="click"
-                        color="primary"
-                    >
-                        ©️
-                    </Tooltip>
-                </IconButton>
-            </Table.Cell>)
-        } else if (columnKey === 'shortUrl') {
-            return (
-                <Table.Cell>
-                    <Collapse divider={false} title={item[columnKey]} className={styles['url-width']}>
-                        <IconButton onClick={() => navigator.clipboard.writeText(item.link)}>
-                            <Tooltip
-                                content={"copied!"}
-                                trigger="click"
-                                color="primary"
-                                placement='bottom'
-                            >
-                                <Text>
-                                    {item.link}
-                                </Text>
-                            </Tooltip>
-                        </IconButton>
-                    </Collapse>
-                </Table.Cell>
-            )
-        } else if (columnKey === "actions") {
-            return (
-                <Table.Cell><Row justify="center" align="center">
-                    <Col css={{ d: "flex" }}>
-                    <Tooltip content="Details">
-                        <IconButton onClick={() => console.log("View user", 1)}>
-                        <EyeIcon size={20} fill="#979797" />
-                        </IconButton>
-                    </Tooltip>
-                    </Col>
-                    <Col css={{ d: "flex" }}>
-                    <Tooltip content="Edit user">
-                        <IconButton onClick={() => console.log("Edit user", 1)}>
-                        <EditIcon size={20} fill="#979797" />
-                        </IconButton>
-                    </Tooltip>
-                    </Col>
-                    <Col css={{ d: "flex" }}>
-                    <Tooltip
-                        content="Delete user"
-                        color="error"
-                        onClick={() => console.log("Delete user", 1)}
-                    >
-                        <IconButton>
-                        <DeleteIcon size={20} fill="#FF0080" />
-                        </IconButton>
-                    </Tooltip>
-                    </Col>
-                </Row></Table.Cell>
-                );
-        }
-        return <Table.Cell>{item[columnKey]}</Table.Cell>
-    }

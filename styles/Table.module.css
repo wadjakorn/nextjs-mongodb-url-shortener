@@ -7,6 +7,6 @@
   width: 100%;
 }
 
-.url-width {
-  max-width: 320px;
+.col-width {
+  width: 240px;
 }

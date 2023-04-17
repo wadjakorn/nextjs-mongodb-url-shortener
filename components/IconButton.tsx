@@ -15,5 +15,5 @@ export const IconButton = styled('button', {
   },
   '&:active': {
     opacity: '0.6'
-  }
+  },
 });
