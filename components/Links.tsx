@@ -87,6 +87,7 @@ export default function Links() {
         if (gotoPage > totalPages || gotoPage < 1) {
             return
         }
+        setLoading(true)
         setPage(gotoPage)
         // return router.push({
         //     pathname: '/',
