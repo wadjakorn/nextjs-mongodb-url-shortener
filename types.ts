@@ -29,7 +29,7 @@ export class UrlInfo {
     title: string;
     shortUrl: string;
     createdAt: Date;
-    visit: Visit;
+    visits: Visit[];
     latestClick: Date;
     tags: string[];
     constructor(uid: string, link: string, title: string, shortUrl: string, createdAt: Date, tags: string[] = []) {
@@ -38,7 +38,7 @@ export class UrlInfo {
         this.title = title;
         this.shortUrl = shortUrl;
         this.createdAt = createdAt;
-        this.visit = new Visit();
+        this.visits = [];
         this.latestClick = null;
         this.tags = tags;
     }
@@ -57,9 +57,6 @@ export class UrlInfo {
     setCreatedAt(createdAt: Date) {
         this.createdAt = createdAt;
     }
-    setVisit(visit: Visit) {
-        this.visit = visit;
-    }
     setLatestClick(latestClick: Date) {
         this.latestClick = latestClick;
     }
@@ -74,17 +71,29 @@ export class UpdateUrlInfo {
         this._urlInfo = existsInfo;
         this.$set = {};
     }
-    $set: {
+    $set?: {
         link?: string;
         title?: string;
         latestClick?: Date;
-        visit?: Visit;
         tags?: string[];
+        visits?: Visit[];
     }
+    $push?: {
+        visits?: Visit;
+    }
+    $inc?: any
     getUpdateObj(): UpdateFilter<UrlInfo> {
-        return {
-            $set: this.$set,
-        };
+        const filter: UpdateFilter<UrlInfo> = {};
+        if (this.$set) {
+            filter.$set = this.$set;
+        }
+        if (this.$push) {
+            filter.$push = this.$push;
+        }
+        if (this.$inc) {
+            filter.$inc = this.$inc;
+        }
+        return filter;
     }
     setLink(link: string) {
         this.$set.link = link;
@@ -95,14 +104,17 @@ export class UpdateUrlInfo {
     setLatestClick(latestClick: Date) {
         this.$set.latestClick = latestClick;
     }
-    setVisit(visit: Visit) {
-        this.$set.visit = visit;
-    }
-    incVisitFrom(visitFrom: keyof Visit) {
-        if (!this.$set.visit) {
-            this.$set.visit = new Visit();
+    incVisit(from: string, count: number = 1) {
+        const i = this._urlInfo.visits?.findIndex((v) => v.from === from);
+        if (i >= 0) {
+            this.$inc = {
+                [`visits.${i}.count`]: count,
+            };
+        } else {
+            this.$push = {
+                visits: new Visit(from, count),
+            };
         }
-        this.$set.visit[`${visitFrom}`] = (this._urlInfo.visit[`${visitFrom}`] ?? 0) + 1;
     }
     setTags(tags: string[]) {
         this.$set.tags = tags;
@@ -110,17 +122,11 @@ export class UpdateUrlInfo {
 }
 
 export class Visit {
-    yt: number;
-    fb: number;
-    tt: number;
-    ig: number;
-    unknown: number;
-    constructor(yt: number = 0, fb: number = 0, tt: number = 0, ig: number = 0, unknown: number = 0) {
-        this.yt = yt;
-        this.fb = fb;
-        this.tt = tt;
-        this.ig = ig;
-        this.unknown = unknown;
+    from: string;
+    count: number;
+    constructor(from: string = null, count: number = 0) {
+        this.from = from;
+        this.count = count;
     }
 }
 
@@ -135,4 +141,9 @@ export class CreateLinkInputs {
         this.tags = tags;
         this.customHash = customHash;
     }
+}
+
+export class Column {
+    key: string;
+    label: string;
 }

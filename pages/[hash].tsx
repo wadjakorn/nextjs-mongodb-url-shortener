@@ -16,8 +16,8 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
       console.info(formatLog(`from: ${from}`));
       const updateObj = new UpdateUrlInfo(urlInfo);
       updateObj.setLatestClick(new Date());
-      updateObj.incVisitFrom(from)
-      console.info(updateObj.$set);
+      updateObj.incVisit(from)
+      console.info({ up: updateObj.getUpdateObj() });
       // TODO: save visit history
       await urlInfoCollection.updateOne(
         {

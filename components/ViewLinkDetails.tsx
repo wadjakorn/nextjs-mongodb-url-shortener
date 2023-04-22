@@ -1,13 +1,14 @@
 import React, { useEffect } from "react";
 import { Badge, Modal, Text, Grid, Popover, Link } from "@nextui-org/react";
 import { UrlInfo } from "../types";
-import { FromRef } from './FromRef';
 import { IconButton } from './IconButton';
 import { CopyIcon } from './CopyIcon';
 import { copy } from '../utils';
+import { VisitTable } from "./VisitTable";
+import { SocialShareBtn } from "./SocialShareBtn";
 
 export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
-    const [urlInfo, setUrlInfo] = React.useState(null);
+    const [urlInfo, setUrlInfo] = React.useState<UrlInfo>(null);
 
     useEffect(() => {
         if (!!props.item) {
@@ -74,21 +75,33 @@ export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
                     <Link target='_blank' href={urlInfo?.link}>{urlInfo?.link}</Link>
                 </div>
                 <div>
-                    <Text size={14}>Visits</Text>
-                    <Grid.Container gap={2}>
-                        <Grid>
-                            <FromRef color="primary" text="Facebook" count={urlInfo?.visit?.fb} />
+                    <Text size={14}>Shares</Text>
+                    <Grid.Container gap={1}>
+                        <Grid md={3}>
+                            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                <SocialShareBtn text="Facebook" color="primary" url={`${urlInfo?.shortUrl}?from=fb`} />
+                            </div>
                         </Grid>
-                        <Grid>
-                            <FromRef color="error" text="Youtube" count={urlInfo?.visit?.yt} />
+                        <Grid md={3}>
+                            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                <SocialShareBtn text="Instagram" color="secondary" url={`${urlInfo?.shortUrl}?from=ig`} />
+                            </div>
                         </Grid>
-                        <Grid>
-                            <FromRef color="secondary" text="Instagram" count={urlInfo?.visit?.ig} />
+                        <Grid md={3}>
+                            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                <SocialShareBtn text="Tiktok" color="warning" url={`${urlInfo?.shortUrl}?from=tt`} />
+                            </div>
                         </Grid>
-                        <Grid>
-                            <FromRef color="warning" text="Tiktok" count={urlInfo?.visit?.tt} />
+                        <Grid md={3}>
+                            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                                <SocialShareBtn text="Youtube" color="error" url={`${urlInfo?.shortUrl}?from=yt`} />
+                            </div>
                         </Grid>
                     </Grid.Container>
+                </div>
+                <div>
+                    <Text size={14}>Visits</Text>
+                    <VisitTable visits={urlInfo?.visits ?? []} />
                 </div>
             </Modal.Body>
             <Modal.Footer>
