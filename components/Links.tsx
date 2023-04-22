@@ -189,11 +189,19 @@ export default function Links() {
     }
 
     function renderTable() {
-        if (loading) {
-            return <Loading />
+        if (!resp ?? loading) {
+            return (
+                <div style={{ display: 'flex', justifyContent: 'center'}}>
+                    <Loading />
+                </div>
+            )
         }
         if (!resp?.data?.length) {
-            return <p>No data</p>
+            return (
+                <div style={{ display: 'flex', justifyContent: 'center'}}>
+                    <p>No data</p>
+                </div>
+            )
         }
         return (<div>
             <Table 
