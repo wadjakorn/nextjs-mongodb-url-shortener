@@ -12,9 +12,7 @@ export function SocialShareBtn({ text, color, url }) {
                     color={color} 
                     size="sm" 
                     icon={
-                        <IconButton>
-                            <CopyIcon size={20} fill="#979797" />
-                        </IconButton>
+                        <CopyIcon size={20} fill="#979797" />
                     }
                     onClick={() => copy(url)}>
                     { text }

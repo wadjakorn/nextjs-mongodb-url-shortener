@@ -16,7 +16,7 @@ export function VisitTable(props: { visits : Visit[] }) {
 
     function renderRow(visit: Visit) {
         return (
-            <Table.Row >
+            <Table.Row key={visit.from}>
                 <Table.Cell>{ visit.from }</Table.Cell>
                 <Table.Cell>{ visit.count }</Table.Cell>
             </Table.Row>
@@ -31,6 +31,7 @@ export function VisitTable(props: { visits : Visit[] }) {
 
     return (
         <Table
+            aria-label="Visit Table"
             lined
             headerLined
             shadow={false}

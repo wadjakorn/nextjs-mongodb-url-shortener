@@ -7,6 +7,12 @@ export enum COLLECTION_NAMES {
 export class RespData {
     type: string;
     code: number;
+    data: UrlInfo;
+}
+
+export class RespDataList {
+    type: string;
+    code: number;
     totalLinks: number;
     data: UrlInfo[];
 }

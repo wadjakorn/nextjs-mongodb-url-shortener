@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Table, Row, Col, Text, Link, Button, Popover, Badge, Loading, Input, Checkbox } from '@nextui-org/react';
-import { UrlInfo, RespData, CreateRespData, DeleteRespData, Column } from '../types';
+import { UrlInfo, RespDataList, CreateRespData, DeleteRespData, Column } from '../types';
 import { IconButton } from './IconButton';
 import { EyeIcon } from './EyeIcon';
 import { CopyIcon } from './CopyIcon';
@@ -11,13 +11,15 @@ import { copy } from '../utils';
 import { CreateLink } from './CreateLink';
 import { DeleteIcon } from './DeleteIcon';
 import { DeleteLink } from './DeleteLink';
+import { ExlinkIcon } from './ExlinkIcon';
+import TopboxStyle from '../styles/Topbox.module.css';
 
 export default function Links() {
     const router = useRouter()
     // console.log({ query: router.query })
     const [showCreateForm, setShowCreateForm] = useState(false)
     const [showItemDetails, setShowItemDetails] = useState<UrlInfo>(null)
-    const [resp, setResp] = useState<RespData>(null)
+    const [resp, setResp] = useState<RespDataList>(null)
     const [totalPages, setTotalPages] = useState(0)
     const [page, setPage] = useState(Number(router.query.page ?? 1))
     const [limit, setLimit] = useState(10)
@@ -39,7 +41,7 @@ export default function Links() {
         }
         fetch(`/api/links?limit=${limit}&page=${page}${options}`)
             .then((res) => res.json())
-            .then((resp: RespData) => {
+            .then((resp: RespDataList) => {
                 console.log({ resp })
                 setResp(resp)
                 setTotalPages(Math.ceil(resp.totalLinks / limit))
@@ -89,10 +91,6 @@ export default function Links() {
         }
         setLoading(true)
         setPage(gotoPage)
-        // return router.push({
-        //     pathname: '/',
-        //     query: { page: gotoPage },
-        // })
     }
 
     const renderPagination = () => {
@@ -152,8 +150,11 @@ export default function Links() {
         <Table.Cell>
             <Row justify="center" align="center">
                 <Col css={{ d: "flex" }}>
-                    <IconButton onClick={() => setShowItemDetails(item)}>
-                        <EyeIcon size={20} fill="#979797" />
+                    <IconButton onClick={() => openDetails(item)}>
+                        <EyeIcon size={20} fill="#782ac8" />
+                    </IconButton>
+                    <IconButton css={{ ml:'20px' }} onClick={() => openDetailsFull(item)}>
+                        <ExlinkIcon size={20} fill="#0072f5" />
                     </IconButton>
                     <IconButton css={{ ml:'20px' }} onClick={() => setShowDeleteConfirm(item.uid)}>
                         <DeleteIcon size={20} fill="#FF0080" />
@@ -187,6 +188,16 @@ export default function Links() {
     function doSearch() {
         setSearchText((document.getElementById('search-input') as HTMLInputElement).value);
         setRefresh(!refresh);
+    }
+
+    function openDetails(item: UrlInfo) {
+        setShowItemDetails(item)
+    }
+
+    function openDetailsFull(item: UrlInfo) {
+        router.push({
+            pathname: `/links/${item.uid}`,
+        })
     }
 
     function renderTable() {
@@ -241,14 +252,15 @@ export default function Links() {
             <ViewLinkDetails item={showItemDetails} onClose={() => setShowItemDetails(null)} />
             <CreateLink open={showCreateForm} onClose={(resp: CreateRespData) => { if (!!resp) {setCreatedResp(resp)} setShowCreateForm(false) }} />
             <DeleteLink uid={showDeleteConfirm} onClose={(resp: DeleteRespData) => { if (!!resp) {setDeletedResp(resp)} setShowDeleteConfirm(null) }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between'}}>
-                <div style={{ display: 'flex', justifyContent: 'start'}}>
-                    <Input id="search-input" aria-label='search' clearable placeholder='Search...' initialValue={searchText}/>
-                    <Button style={{ marginLeft: '10px' }} onPress={() => doSearch()}>
+            <div className={TopboxStyle.topbox}>
+                <div className={TopboxStyle.search}>
+                    <Input className={TopboxStyle.searchInput} size='sm' fullWidth id="search-input" aria-label='search' clearable placeholder='Search...' initialValue={searchText}/>
+                    <Button className={TopboxStyle.searchBtn} size={'sm'} onPress={() => doSearch()}>
                         Find
                     </Button>
-                    <div style={{ marginLeft: '20px' }}>
+                    <div className={TopboxStyle.rules}>
                         <Checkbox.Group
+                            size='sm'
                             aria-label='Search Rules'
                             orientation="horizontal"
                             color="secondary"
@@ -257,16 +269,16 @@ export default function Links() {
                             onChange={(value: string[]) => setSearchRules(value)}
                         >
                             <Checkbox value="title">Title</Checkbox>
-                            <Checkbox value="hash">hash</Checkbox>
+                            <Checkbox value="hash">uid</Checkbox>
                             <Checkbox value="tags">Tags</Checkbox>
                         </Checkbox.Group>
                     </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'end'}}>
-                    <Button color={"warning"} onPress={() => setRefresh(!refresh)}>
+                <div className={TopboxStyle.action} >
+                    <Button size={'sm'} color={"warning"} onPress={() => setRefresh(!refresh)}>
                         { loading ? <Loading /> : 'Refresh'}
                     </Button>
-                    <Button style={{ marginLeft: '10px' }} onPress={() => setShowCreateForm(true)}>
+                    <Button size={'sm'} style={{ marginLeft: '10px' }} onPress={() => setShowCreateForm(true)}>
                         + Create Short Link
                     </Button>
                 </div>

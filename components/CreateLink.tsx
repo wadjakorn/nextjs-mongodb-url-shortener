@@ -1,6 +1,7 @@
 import React, { FormEvent, useEffect } from "react";
 import { Modal, Text, Input, Button } from "@nextui-org/react";
 import { CreateLinkInputs, CreateRespData } from "../types";
+import CreateFormStyle from '../styles/Create.module.css'
 
 export function CreateLink(props: { open: boolean, onClose: (resp: CreateRespData) => void }) {
     const [open, setOpen] = React.useState(false);
@@ -41,23 +42,21 @@ export function CreateLink(props: { open: boolean, onClose: (resp: CreateRespDat
 
     const renderForm = () => {
         return (
-            <form onSubmit={makeLink}>
-                <div style={{ display: 'grid', gap: '20px' }}>
-                    <div style={{ gridColumnStart: 1, gridColumnEnd: 3 }}>
-                        <Input label="Title" name="title" clearable fullWidth placeholder="title" onChange={(v) => setInputs({ ...inputs, title: v.target.value })} />
-                    </div>
-                    <div style={{ gridColumnStart: 3, gridColumnEnd: 5 }}>
-                        <Input label="Tags" clearable fullWidth placeholder="tags" onChange={(v) => setInputs({ ...inputs, tags: v.target.value?.split(",") })} />
-                    </div>
-                    <div style={{ gridColumnStart: 1, gridRowStart: 2 }}>
-                        <Input label="Custom uid (optional)" name="customHash" clearable fullWidth placeholder="custom uid (customHash)" onChange={(v) => setInputs({ ...inputs, customHash: v.target.value })} />
-                    </div>
-                    <div style={{ gridColumnStart: 2, gridColumnEnd: 4, gridRowStart: 2 }}>
-                        <Input label="Original Link" name="originalLink" clearable fullWidth placeholder="original link" onChange={(v) => setInputs({ ...inputs, link: v.target.value })} />
-                    </div>
-                    <div style={{ gridColumnStart: 4, gridColumnEnd: 5, gridRowStart: 2, display: 'flex', alignItems: 'end' }}>
-                        <Button style={{ width: '100%'}} type="submit">Create</Button>
-                    </div>
+            <form onSubmit={makeLink} className={CreateFormStyle.createForm}>
+                <div>
+                    <Input label="Title" name="title" clearable fullWidth placeholder="title" onChange={(v) => setInputs({ ...inputs, title: v.target.value })} />
+                </div>
+                <div>
+                    <Input label="Tags" clearable fullWidth placeholder="tags" onChange={(v) => setInputs({ ...inputs, tags: v.target.value?.split(",") })} />
+                </div>
+                <div>
+                    <Input label="Custom uid (optional)" name="customHash" clearable fullWidth placeholder="custom uid (customHash)" onChange={(v) => setInputs({ ...inputs, customHash: v.target.value })} />
+                </div>
+                <div>
+                    <Input label="Original Link" name="originalLink" clearable fullWidth placeholder="original link" onChange={(v) => setInputs({ ...inputs, link: v.target.value })} />
+                </div>
+                <div >
+                    <Button style={{ width: '100%'}} type="submit">Create</Button>
                 </div>
             </form>
         )
@@ -65,7 +64,8 @@ export function CreateLink(props: { open: boolean, onClose: (resp: CreateRespDat
 
     return (
         <Modal
-            closeButton
+            closeButton={!!props.onClose}
+            preventClose={true}
             blur
             width="800px"
             aria-label="modal-title"

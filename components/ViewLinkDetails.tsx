@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Badge, Modal, Text, Grid, Popover, Link } from "@nextui-org/react";
+import { Badge, Modal, Text, Grid, Popover, Link, Loading } from "@nextui-org/react";
 import { UrlInfo } from "../types";
 import { IconButton } from './IconButton';
 import { CopyIcon } from './CopyIcon';
@@ -8,49 +8,62 @@ import { VisitTable } from "./VisitTable";
 import { SocialShareBtn } from "./SocialShareBtn";
 
 export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
-    const [urlInfo, setUrlInfo] = React.useState<UrlInfo>(null);
 
-    useEffect(() => {
-        if (!!props.item) {
-            setUrlInfo(props.item);
-        } else {
-            setUrlInfo(null);
-        }
-    }, [props])
+    if (!props.onClose && !props.item) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh'}}>
+                <Loading size="lg" />
+            </div>
+        )
+    }
 
     const closeHandler = () => {
-        props.onClose();
+        if (props.onClose) {
+            props.onClose();
+        }
     };
+
+    type colors = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error';
+
+    const renderTags = (tags: string[]) => {
+        if (!tags || tags.length === 0) {
+            return <Badge>No tags</Badge>;
+        }
+        return tags.map((tag: string) => {
+            const color = ['default', 'primary', 'secondary', 'success', 'warning', 'error'][Math.floor(Math.random() * 6)];
+            return <Badge key={tag} color={color as colors}>{tag}</Badge>
+
+        })
+    }
 
     return (
         <Modal
-            closeButton
+            closeButton={!!props.onClose}
+            preventClose={true}
             blur
             width="800px"
             aria-labelledby="modal-title"
-            open={!!urlInfo}
+            open={!!props.item}
             onClose={closeHandler}
         >
             <Modal.Header>
                 <Text id="modal-title" size={18}>
                     UID: 
                     <Text style={{ marginLeft: '10px'}} b size={18}>
-                    { urlInfo?.uid }
+                    { props.item?.uid }
                     </Text>
                 </Text>
             </Modal.Header>
             <Modal.Body>
                 <div>
                     <Text size={14}>Tags</Text>
-                    {urlInfo?.tags?.map((tag: string) => (
-                        <Badge key={tag}>{tag}</Badge>
-                    ))}
+                    {renderTags(props.item?.tags)}
                 </div>
                 <Text size={14}>Shorten Link</Text>
                 <div style={{ display: 'flex', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden',  }}>
                     <Popover placement='left'>
                         <Popover.Trigger>
-                            <IconButton onClick={() => copy(urlInfo?.shortUrl)}>
+                            <IconButton onClick={() => copy(props.item?.shortUrl)}>
                                 <CopyIcon size={20} fill="#979797" style={{ marginRight: '10px' }} />
                             </IconButton>
                         </Popover.Trigger>
@@ -58,13 +71,13 @@ export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
                             <Text css={{ p: "$5" }}>Copied!</Text>
                         </Popover.Content>
                     </Popover>
-                    <Link target='_blank' href={urlInfo?.shortUrl}>{urlInfo?.shortUrl}</Link>
+                    <Link target='_blank' href={props.item?.shortUrl}>{props.item?.shortUrl}</Link>
                 </div>
                 <Text size={14}>Original Link</Text>
                 <div style={{ display: 'flex', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden',  }}>
                     <Popover placement='left'>
                         <Popover.Trigger>
-                            <IconButton onClick={() => copy(urlInfo?.link)}>
+                            <IconButton onClick={() => copy(props.item?.link)}>
                                 <CopyIcon size={20} fill="#979797" style={{ marginRight: '10px' }} />
                             </IconButton>
                         </Popover.Trigger>
@@ -72,36 +85,36 @@ export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
                             <Text css={{ p: "$5" }}>Copied!</Text>
                         </Popover.Content>
                     </Popover>
-                    <Link target='_blank' href={urlInfo?.link}>{urlInfo?.link}</Link>
+                    <Link target='_blank' href={props.item?.link}>{props.item?.link}</Link>
                 </div>
                 <div>
                     <Text size={14}>Shares</Text>
                     <Grid.Container gap={1}>
                         <Grid md={3}>
                             <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                                <SocialShareBtn text="Facebook" color="primary" url={`${urlInfo?.shortUrl}?from=fb`} />
+                                <SocialShareBtn text="Facebook" color="primary" url={`${props.item?.shortUrl}?from=fb`} />
                             </div>
                         </Grid>
                         <Grid md={3}>
                             <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                                <SocialShareBtn text="Instagram" color="secondary" url={`${urlInfo?.shortUrl}?from=ig`} />
+                                <SocialShareBtn text="Instagram" color="secondary" url={`${props.item?.shortUrl}?from=ig`} />
                             </div>
                         </Grid>
                         <Grid md={3}>
                             <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                                <SocialShareBtn text="Tiktok" color="warning" url={`${urlInfo?.shortUrl}?from=tt`} />
+                                <SocialShareBtn text="Tiktok" color="warning" url={`${props.item?.shortUrl}?from=tt`} />
                             </div>
                         </Grid>
                         <Grid md={3}>
                             <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                                <SocialShareBtn text="Youtube" color="error" url={`${urlInfo?.shortUrl}?from=yt`} />
+                                <SocialShareBtn text="Youtube" color="error" url={`${props.item?.shortUrl}?from=yt`} />
                             </div>
                         </Grid>
                     </Grid.Container>
                 </div>
                 <div>
                     <Text size={14}>Visits</Text>
-                    <VisitTable visits={urlInfo?.visits ?? []} />
+                    <VisitTable visits={props.item?.visits ?? []} />
                 </div>
             </Modal.Body>
             <Modal.Footer>
