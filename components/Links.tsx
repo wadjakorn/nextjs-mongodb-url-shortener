@@ -12,7 +12,7 @@ import { CreateLink } from './CreateLink';
 import { DeleteIcon } from './DeleteIcon';
 import { DeleteLink } from './DeleteLink';
 import { ExlinkIcon } from './ExlinkIcon';
-import TopboxStyle from '../styles/Topbox.module.css';
+import TopboxStyle from '../styles/TopBox.module.css';
 
 export default function Links() {
     const router = useRouter()
