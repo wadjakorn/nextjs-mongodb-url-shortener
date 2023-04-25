@@ -12,7 +12,9 @@ export async function createLink(
   response: NextApiResponse
 ) {
   // TODO: customDomain, tags
-  const { link, title, customHash, tags /*customDomain*/ } = request.body;
+  const { link, title, customHash, tags, customDomain } = request.body;
+  const domain = customDomain ?? process.env.HOST;
+
   if (!link) {
     response.status(400).send({
       type: "Error",
@@ -27,10 +29,19 @@ export async function createLink(
     const linkExists = await coll.findOne({
       "$or": [{ link }, { uid: hash }],
     });
-    const shortUrl = `${process.env.HOST}/${hash}`;
+    const shortUrl = `${domain}/${hash}`;
     if (!linkExists) {
       const urlInfo = new UrlInfo(hash, link, title, shortUrl, new Date(), tags);
       await coll.insertOne(urlInfo);
+    } else {
+      response.status(409);
+      response.send({
+        type: "error",
+        code: 409,
+        message: "Link already exists",
+      });
+      console.log("Error: Link already exists");
+      return;
     }
     response.status(201);
     response.send({

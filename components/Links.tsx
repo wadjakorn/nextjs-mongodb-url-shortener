@@ -42,7 +42,7 @@ export default function Links() {
         fetch(`/api/links?limit=${limit}&page=${page}${options}`)
             .then((res) => res.json())
             .then((resp: RespDataList) => {
-                console.log({ resp })
+                // console.log({ resp })
                 setResp(resp)
                 setTotalPages(Math.ceil(resp.totalLinks / limit))
                 setLoading(false)
@@ -67,6 +67,10 @@ export default function Links() {
 
     const columns: Column[] = [
     {
+        key: "visits",
+        label: "visits",
+    },
+    {
         key: "title",
         label: "title",
     },
@@ -85,7 +89,7 @@ export default function Links() {
     ];
 
     const paging = (gotoPage: number) => {
-        console.log({ gotoPage })
+        // console.log({ gotoPage })
         if (gotoPage > totalPages || gotoPage < 1) {
             return
         }
@@ -179,6 +183,12 @@ export default function Links() {
                     {item.tags?.map((tag) => (
                         <Badge key={tag} className={styles['tag']}>{tag}</Badge>
                     ))}
+                </Table.Cell>
+            )
+        } else if (columnKey === 'visits') {
+            return (
+                <Table.Cell>
+                    {item.visits?.reduce((total, v) => { total+=v.count; return total; } ,0)}
                 </Table.Cell>
             )
         }
