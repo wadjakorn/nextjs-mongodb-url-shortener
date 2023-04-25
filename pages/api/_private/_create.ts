@@ -27,22 +27,32 @@ export async function createLink(
     const coll = await urlInfColl();
     const hash = customHash ?? getHash();
     const linkExists = await coll.findOne({
-      "$or": [{ link }, { uid: hash }],
+      link: link,
+    });
+    const uidExists = await coll.findOne({
+      uid: hash,
     });
     const shortUrl = `${domain}/${hash}`;
-    if (!linkExists) {
-      const urlInfo = new UrlInfo(hash, link, title, shortUrl, new Date(), tags);
-      await coll.insertOne(urlInfo);
-    } else {
+    if (linkExists) {
       response.status(409);
       response.send({
         type: "error",
         code: 409,
         message: "Link already exists",
       });
-      console.log("Error: Link already exists");
       return;
     }
+    if (uidExists) {
+      response.status(409);
+      response.send({
+        type: "error",
+        code: 409,
+        message: "UID already exists",
+      });
+      return;
+    }
+    const urlInfo = new UrlInfo(hash, link, title, shortUrl, new Date(), tags);
+    await coll.insertOne(urlInfo);
     response.status(201);
     response.send({
       type: "success",

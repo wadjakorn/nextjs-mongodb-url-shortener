@@ -36,6 +36,8 @@ export function CreateLink(props: { open: boolean, onClose: (resp: CreateRespDat
                 console.log({ resp })
                 if (resp.code === 201) {
                     closeHandler(resp)
+                } else {
+                    alert(resp.message)
                 }
             })
     }

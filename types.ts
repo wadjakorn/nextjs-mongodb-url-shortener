@@ -21,11 +21,13 @@ export class CreateRespData {
     type: string;
     code: number;
     data: UrlInfo;
+    message: string;
 }
 
 export class DeleteRespData {
     type: string;
     code: number;
+    message: string;
 }
 
 export class UrlInfo {
