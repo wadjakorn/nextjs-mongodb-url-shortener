@@ -179,9 +179,7 @@ export default function Links() {
     }
 
     function renderCell(item: UrlInfo, columnKey: string) {
-        if (columnKey[0] === ".") {
-            return <Table.Cell>{getNested(item, columnKey)}</Table.Cell>
-        } else if (columnKey === 'shortUrl') {
+        if (columnKey === 'shortUrl') {
             return (renderShortlink(item)
             )
         } else if (columnKey === "actions") {
@@ -197,7 +195,7 @@ export default function Links() {
         } else if (columnKey === 'visits') {
             return (
                 <Table.Cell>
-                    {item.visits?.reduce((total, v) => { total+=v.count; return total; } ,0)}
+                    {item.visits?.reduce((total, v) => { if(v.from && v.from !== 'unknown') {total+=v.count;} return total; } ,0)}
                 </Table.Cell>
             )
         }
