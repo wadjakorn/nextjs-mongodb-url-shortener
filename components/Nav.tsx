@@ -9,7 +9,7 @@ export default function Nav() {
         window.location.href = '/login';
     }
 
-    return <Navbar isBordered variant="sticky">
+    return <Navbar>
     <Navbar.Brand>
       <Text b color="inherit" hideIn="xs">
         URL transform services
