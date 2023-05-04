@@ -32,6 +32,10 @@ export default function Links() {
     const [deletedResp, setDeletedResp] = useState<DeleteRespData>(null)
 
     useEffect(() => {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
         let options = '';
         if (searchText) {
             options = `&search=${searchText}`
@@ -39,10 +43,18 @@ export default function Links() {
         if (searchRules.length) {
             options += `&searchRules=${searchRules.join(',')}`
         }
-        fetch(`/api/links?limit=${limit}&page=${page}${options}`)
+        fetch(`/api/links?limit=${limit}&page=${page}${options}`, { headers } )
             .then((res) => res.json())
             .then((resp: RespDataList) => {
-                // console.log({ resp })
+                console.log(resp?.code)
+                if (resp.code === 401 || resp.code === 403) {
+                    router.push('/login')
+                    return;
+                }
+                if (resp.code !== 200) {
+                    router.push('/notfound')
+                    return;
+                }
                 setResp(resp)
                 setTotalPages(Math.ceil(resp.totalLinks / limit))
                 setLoading(false)

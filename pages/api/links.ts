@@ -2,12 +2,12 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { urlInfColl } from "../../db/url-info-collection";
 import { UrlInfo } from "../../types";
 import { Filter, WithId } from "mongodb";
+import { authenticateToken } from "../../utils";
 
 export default async function ListLink(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
-  // const apiKey = request.headers["api-key"] as string;
   if (request.method !== "GET") {
     return response.status(405).json({
       type: "Error",
@@ -15,6 +15,48 @@ export default async function ListLink(
       message: "Only GET method is accepted on this route",
     });
   }
+
+  const auth = request.headers['authorization'];
+  const token = auth && auth.split(' ')[1];
+  if (token == null) {
+    return response.status(401).json({
+      type: "Error",
+      code: 401,
+      message: "Invalid token",
+    });
+  }
+
+  try {
+    const res = await authenticateToken(request, response);
+    console.log({res})
+    if (res === 401) {
+      console.log("invalid token")
+      response.status(401).json({
+        type: "error",
+        code: 401,
+        message: "Invalid token",
+      });
+      return;
+    }
+    if (res === 403) {
+      console.log("forbidden")
+      response.status(403).json({
+        type: "error",
+        code: 403,
+        message: "Forbidden",
+      });
+      return;
+    }
+  } catch (e: any) {
+    console.log("error")
+    response.status(500).json({
+      code: 500,
+      type: "error",
+      message: e.message,
+    });
+    return;
+  }
+  console.log("passed")
 
   const query = request.query;
   const limit = Number(query.limit) || 50;

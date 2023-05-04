@@ -17,6 +17,13 @@ export class RespDataList {
     data: UrlInfo[];
 }
 
+export class RespLogin {
+    type: string;
+    code: number;
+    message: string;
+    token: string;
+}
+
 export class CreateRespData {
     type: string;
     code: number;
