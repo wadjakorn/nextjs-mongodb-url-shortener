@@ -25,14 +25,14 @@ export async function createLink(
   }
   try {
     const coll = await urlInfColl();
-    const hash = customHash ?? getHash();
+    const uid = customHash ?? getHash();
     const linkExists = await coll.findOne({
       link: link,
     });
     const uidExists = await coll.findOne({
-      uid: hash,
+      uid,
     });
-    const shortUrl = `${domain}/${hash}`;
+    const shortUrl = `${domain}/${uid}`;
     if (linkExists) {
       response.status(409);
       response.send({
@@ -51,7 +51,7 @@ export async function createLink(
       });
       return;
     }
-    const urlInfo = new UrlInfo(hash, link, title, shortUrl, new Date(), tags);
+    const urlInfo = new UrlInfo(uid, link, title, shortUrl, new Date(), tags);
     await coll.insertOne(urlInfo);
     response.status(201);
     response.send({

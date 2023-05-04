@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Table, Row, Col, Text, Link, Button, Popover, Badge, Loading, Input, Checkbox } from '@nextui-org/react';
+import { Table, Row, Col, Text, Link, Button, Popover, Badge, Loading, Input, Checkbox, Container } from '@nextui-org/react';
 import { UrlInfo, RespDataList, CreateRespData, DeleteRespData, Column } from '../types';
 import { IconButton } from './IconButton';
 import { EyeIcon } from './EyeIcon';
@@ -16,7 +16,6 @@ import TopboxStyle from '../styles/TopBox.module.css';
 
 export default function Links() {
     const router = useRouter()
-    // console.log({ query: router.query })
     const [showCreateForm, setShowCreateForm] = useState(false)
     const [showItemDetails, setShowItemDetails] = useState<UrlInfo>(null)
     const [resp, setResp] = useState<RespDataList>(null)
@@ -27,7 +26,7 @@ export default function Links() {
     const [refresh, setRefresh] = useState(false)
     const [loading, setLoading] = useState(true)
     const [searchText, setSearchText] = useState((router.query.search as string) ?? '')
-    const [searchRules, setSearchRules] = useState(router.query.searchRules ? (router.query.searchRules as string).split(',') : ['title', 'hash', 'tags'])
+    const [searchRules, setSearchRules] = useState(router.query.searchRules ? (router.query.searchRules as string).split(',') : ['title', 'uid', 'tags'])
     const [createdResp, setCreatedResp] = useState<CreateRespData>(null)
     const [deletedResp, setDeletedResp] = useState<DeleteRespData>(null)
 
@@ -46,7 +45,6 @@ export default function Links() {
         fetch(`/api/links?limit=${limit}&page=${page}${options}`, { headers } )
             .then((res) => res.json())
             .then((resp: RespDataList) => {
-                console.log(resp?.code)
                 if (resp.code === 401 || resp.code === 403) {
                     router.push('/login')
                     return;
@@ -101,7 +99,6 @@ export default function Links() {
     ];
 
     const paging = (gotoPage: number) => {
-        // console.log({ gotoPage })
         if (gotoPage > totalPages || gotoPage < 1) {
             return
         }
@@ -260,12 +257,12 @@ export default function Links() {
                     )}
                 </Table.Body>
             </Table>
-            <div className={styles['f-center']}>
+            <Container css={{ dflex: 'center', p: 0 ,mt: '20px'}}>
                 <Text size="$md">Total links: {resp.totalLinks}</Text>
-            </div>
-            <div className={styles['f-center']}>
+            </Container>
+            <Container css={{ dflex: 'center', p: 0 ,mt: '20px'}}>
                 {renderPagination()}
-            </div>
+            </Container>
         </div>)
     }
 
@@ -291,7 +288,7 @@ export default function Links() {
                             onChange={(value: string[]) => setSearchRules(value)}
                         >
                             <Checkbox value="title">Title</Checkbox>
-                            <Checkbox value="hash">uid</Checkbox>
+                            <Checkbox value="uid">uid</Checkbox>
                             <Checkbox value="tags">Tags</Checkbox>
                         </Checkbox.Group>
                     </div>

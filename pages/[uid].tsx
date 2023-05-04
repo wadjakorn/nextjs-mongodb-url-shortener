@@ -5,10 +5,10 @@ import { urlInfColl } from "../db/url-info-collection";
 import { formatLog } from "../utils";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
-  const hash = request.query.hash as string;
+  const uid = request.query.uid as string;
   const isTest = request.query.test as string;
   const urlInfoCollection = await urlInfColl();
-  const urlInfo = await urlInfoCollection.findOne({ uid: hash });
+  const urlInfo = await urlInfoCollection.findOne({ uid });
  
   if (urlInfo) {
     if (!isTest) {
@@ -40,7 +40,7 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   };
 }
  
-const HashPage: NextPage = () => {
+const UIDPage: NextPage = () => {
   return (
     <div>
       <Head>
@@ -53,4 +53,4 @@ const HashPage: NextPage = () => {
   );
 };
  
-export default HashPage;
+export default UIDPage;

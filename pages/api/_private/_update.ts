@@ -6,35 +6,36 @@ export async function updateLink(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
-  const { link, hash, title, tags } = request.body;
-  if (!hash) {
+  const uid = request.query.uid;
+  const { link, title, tags } = request.body;
+  if (!uid) {
     response.status(400).send({
       type: "Error",
       code: 400,
-      message: "Expected {hash: string}",
+      message: "Expected {uid: string}",
     });
     return;
   }
   try {
     const coll = await urlInfColl();
     const linkExists = await coll.findOne({
-      uid: hash,
+      uid,
     });
     if (linkExists) {
       const updateObj = new UpdateUrlInfo(linkExists);
       updateObj.setLatestClick(new Date());
-      if (link) {
+      if (link && link !== linkExists.link) {
         updateObj.setLink(link);
       }
-      if (title) {
+      if (title && title !== linkExists.title) {
         updateObj.setTitle(title);
       }
-      if (tags) {
+      if (tags && tags !== linkExists.tags) {
         updateObj.setTags(tags);
       }
       console.info({updateObj});
       await coll.updateOne({
-        uid: hash,
+        uid,
       }, {...updateObj.getUpdateObj()});
       response.status(201);
       response.send({
@@ -49,7 +50,7 @@ export async function updateLink(
     } else {
       response.status(404);
       response.send({
-        type: "not found hash",
+        type: "not found uid",
         code: 404,
         data: null,
       });

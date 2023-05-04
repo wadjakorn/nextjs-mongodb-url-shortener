@@ -16,47 +16,16 @@ export default async function ListLink(
     });
   }
 
-  const auth = request.headers['authorization'];
-  const token = auth && auth.split(' ')[1];
-  if (token == null) {
-    return response.status(401).json({
-      type: "Error",
-      code: 401,
-      message: "Invalid token",
-    });
-  }
-
-  try {
-    const res = await authenticateToken(request, response);
-    console.log({res})
-    if (res === 401) {
-      console.log("invalid token")
-      response.status(401).json({
-        type: "error",
+  if ((request.headers["api-key"] as string) !== process.env.API_KEY) {
+    const authResp = await authenticateToken(request, response)
+    if (authResp !== 200) {
+      return response.status(401).json({
+        type: "Error",
         code: 401,
-        message: "Invalid token",
+        message: "Unauthorized",
       });
-      return;
     }
-    if (res === 403) {
-      console.log("forbidden")
-      response.status(403).json({
-        type: "error",
-        code: 403,
-        message: "Forbidden",
-      });
-      return;
-    }
-  } catch (e: any) {
-    console.log("error")
-    response.status(500).json({
-      code: 500,
-      type: "error",
-      message: e.message,
-    });
-    return;
   }
-  console.log("passed")
 
   const query = request.query;
   const limit = Number(query.limit) || 50;
@@ -73,7 +42,7 @@ export default async function ListLink(
       if (searchRuleSplit.includes("title")) {
         pushOr(filter, { title: { $regex: search, $options: "i" }})
       }
-      if (searchRuleSplit.includes("hash")) {
+      if (searchRuleSplit.includes("uid")) {
         pushOr(filter, { uid: search })
       }
       if (searchRuleSplit.includes("tags")) {

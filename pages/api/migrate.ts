@@ -38,11 +38,11 @@ export default async function Migrate(
         // console.log(results);
         results.map(async (result) => {
             console.log({ item: result });
-            const hash = result.shortUrl.split('/').pop()
+            const uid = result.shortUrl.split('/').pop()
             const input: Input = {
                 link: result.longUrl,
                 title: result.title,
-                customHash: hash,
+                customHash: uid,
                 tags: result.tags.split(','),
                 customDomain: 'https://i.tea2.one'
             }
@@ -53,7 +53,7 @@ export default async function Migrate(
                 console.log({
                     error: e,
                     item: result.title,
-                    uid: hash
+                    uid,
                 })
             }
       });

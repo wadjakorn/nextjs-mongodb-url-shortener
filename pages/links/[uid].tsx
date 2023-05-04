@@ -7,21 +7,23 @@ export default function LinkDetails() {
   const router = useRouter()
   const [resp, setResp] = useState<RespData>(null)
   useEffect(() => {
-    const uid = router.query.hash
-    console.log({ uid })
+    const uid = router.query.uid
     if (!uid) return;
-    fetch(`/api/links/${uid}`)
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+
+    fetch(`/api/links/${uid}`, { headers })
         .then((res) => res.json())
         .then((resp: RespData) => {
-            console.log({ resp })
             setResp(resp)
         })
-  }, [router])
+    }, [router])
 
   return (
     <div>
-      {/* <h1>Link Details</h1> */}
-      {/* <pre>{JSON.stringify(resp, null, 2)}</pre> */}
       <ViewLinkDetails item={resp?.data} onClose={null} />
     </div>
   )

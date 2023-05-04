@@ -31,6 +31,13 @@ export class CreateRespData {
     message: string;
 }
 
+export class UpdateRespData {
+    type: string;
+    code: number;
+    data: UrlInfo;
+    message: string;
+}
+
 export class DeleteRespData {
     type: string;
     code: number;

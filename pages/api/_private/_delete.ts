@@ -7,19 +7,19 @@ export async function deleteLink(
   request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  const hash = request.query.hash as string;
-  if (!hash) {
+  const uid = request.query.uid as string;
+  if (!uid) {
     response.status(400).send({
       type: "Error",
       code: 400,
-      message: "Expected {hash: string}",
+      message: "Expected {uid: string}",
     });
     return;
   }
   try {
     const coll = await urlInfColl();
     const linkExists = await coll.findOne({
-      uid: hash,
+      uid,
     });
     if (linkExists) {
       const updateObj: UpdateFilter<UrlInfo> = {
@@ -29,7 +29,7 @@ export async function deleteLink(
       }
       console.info({updateObj});
       await coll.updateOne({
-        uid: hash,
+        uid,
       }, updateObj);
       response.status(200);
       response.send({
@@ -39,7 +39,7 @@ export async function deleteLink(
     } else {
       response.status(404);
       response.send({
-        type: "not found hash",
+        type: "not found uid",
         code: 404,
         data: null,
       });
