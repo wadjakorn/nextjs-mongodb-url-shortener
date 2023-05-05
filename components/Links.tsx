@@ -29,6 +29,7 @@ export default function Links() {
     const [searchRules, setSearchRules] = useState(router.query.searchRules ? (router.query.searchRules as string).split(',') : ['title', 'uid', 'tags'])
     const [createdResp, setCreatedResp] = useState<CreateRespData>(null)
     const [deletedResp, setDeletedResp] = useState<DeleteRespData>(null)
+    const [errorMsg, setErrorMsg] = useState<string>(null)
 
     useEffect(() => {
         const headers: HeadersInit = {
@@ -50,7 +51,7 @@ export default function Links() {
                     return;
                 }
                 if (resp.code !== 200) {
-                    router.push('/notfound')
+                    setErrorMsg('unknown error')
                     return;
                 }
                 setResp(resp)
@@ -218,6 +219,13 @@ export default function Links() {
     }
 
     function renderTable() {
+        if (errorMsg) {
+            return (
+                <div style={{ display: 'flex', justifyContent: 'center'}}>
+                    <Text h1>{errorMsg}</Text>
+                </div>
+            )
+        }
         if (!resp ?? loading) {
             return (
                 <div style={{ display: 'flex', justifyContent: 'center'}}>
