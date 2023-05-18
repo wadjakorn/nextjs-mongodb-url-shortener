@@ -1,13 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { urlInfColl } from "../../db/url-info-collection";
 import { UrlInfo } from "../../types";
-import { Filter, WithId } from "mongodb";
+import { Filter, Sort, WithId } from "mongodb";
 import { authenticateToken } from "../../utils";
+import { runMiddleware, cors } from "./cors";
 
 export default async function ListLink(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
+
+  await runMiddleware(request, response, cors)
+  
   if (request.method !== "GET") {
     return response.status(405).json({
       type: "Error",
@@ -33,25 +37,40 @@ export default async function ListLink(
   const skip = (page - 1) * limit;
   const search = query.search as string;
   const searchRules = query.searchRules as string;
+  const sortBy = query.sortBy as string;
+  const sortDir = query.sortDir as string;
  
   try {
     const coll = await urlInfColl()
     const filter: Filter<UrlInfo> = { deletedAt: { $exists: false } }
     if (search) {
       const searchRuleSplit = searchRules.split(",")
-      if (searchRuleSplit.includes("title")) {
-        pushOr(filter, { title: { $regex: search, $options: "i" }})
-      }
-      if (searchRuleSplit.includes("uid")) {
-        pushOr(filter, { uid: search })
-      }
-      if (searchRuleSplit.includes("tags")) {
-        pushOr(filter, { tags: search })
+      searchRuleSplit.forEach((key: string) => {
+        if (key == "title") {
+          pushOr(filter, { title: { $regex: search, $options: "i" }})
+        }
+        if (key == "uid") {
+          pushOr(filter, { uid: search })
+        }
+        if (key == "tags") {
+          pushOr(filter, { tags: search })
+        }
+      })
+    }
+    let sortDirection: 1 | -1 = -1
+    if (sortDir) {
+      sortDirection = sortDir === 'desc' ? -1 : 1
+    }
+    let sort: Sort = { createdAt: sortDirection }
+    if (sortBy) {
+      sort = {
+        [`${sortBy}`]: sortDirection
       }
     }
-    
+
     const count = await coll.countDocuments(filter);
-    const list = await coll.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray();
+    const list = await coll.find(filter).sort({ ...sort }).skip(skip).limit(limit).toArray();
+
     response.status(200);
     response.send({
       type: "success",

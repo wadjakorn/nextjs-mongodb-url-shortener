@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@nextui-org/react": "^1.0.0-beta.12",
+    "@types/cors": "^2.8.13",
     "@types/jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
     "jsonwebtoken": "^9.0.0",
     "mongodb": "^5.2.0",
     "neat-csv": "^7.0.0",

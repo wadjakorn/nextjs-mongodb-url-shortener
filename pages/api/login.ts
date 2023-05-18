@@ -1,9 +1,13 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { authenticateToken, generateAccessToken } from "../../utils";
+import { runMiddleware, cors } from './cors';
 
 export default async function Login(
     request: NextApiRequest,
     response: NextApiResponse) {
+
+    await runMiddleware(request, response, cors)
+
     if (request.method !== "POST") {
         return response.status(405).json({
             type: "Error",

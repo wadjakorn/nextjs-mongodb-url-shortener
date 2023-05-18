@@ -30,6 +30,8 @@ export default function Links() {
     const [createdResp, setCreatedResp] = useState<CreateRespData>(null)
     const [deletedResp, setDeletedResp] = useState<DeleteRespData>(null)
     const [errorMsg, setErrorMsg] = useState<string>(null)
+    const [sortBy, setSortBy] = useState<string>((router.query.sortBy as string) ?? '')
+    const [sortDir, setSortDir] = useState<string>((router.query.sortDir as string) ?? '')
 
     useEffect(() => {
         const headers: HeadersInit = {
@@ -42,6 +44,12 @@ export default function Links() {
         }
         if (searchRules.length) {
             options += `&searchRules=${searchRules.join(',')}`
+        }
+        if (sortBy) {
+            options += `&sortBy=${sortBy}`
+        }
+        if (sortDir) {
+            options += `&sortDir=${sortDir}`
         }
         fetch(`/api/links?limit=${limit}&page=${page}${options}`, { headers } )
             .then((res) => res.json())
@@ -66,7 +74,7 @@ export default function Links() {
                     },
                 })
             })
-    }, [page, createdResp, deletedResp, refresh])
+    }, [page, createdResp, deletedResp, refresh, sortBy, sortDir])
 
     useEffect(() => {
         if (refresh) {
@@ -218,6 +226,11 @@ export default function Links() {
         })
     }
 
+    async function sort() {
+        setSortBy('title')
+        setSortDir('asc')
+    }
+
     function renderTable() {
         if (errorMsg) {
             return (
@@ -283,6 +296,9 @@ export default function Links() {
                     <Button className={TopboxStyle.searchBtn} size={'sm'} onPress={() => doSearch()}>
                         Find
                     </Button>
+                    {/* <Button className={TopboxStyle.searchBtn} size={'sm'} onPress={() => sort()}>
+                        SortTitle
+                    </Button> */}
                     <div className={TopboxStyle.rules}>
                         <Checkbox.Group
                             size='sm'

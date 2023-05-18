@@ -3,11 +3,15 @@ import { urlInfColl } from "../../../db/url-info-collection";
 import { UrlInfo } from "../../../types";
 import { Filter } from "mongodb";
 import { authenticateToken } from "../../../utils";
+import { cors, runMiddleware } from "../cors";
 
 export default async function Details(
   request: NextApiRequest,
   response: NextApiResponse
 ) {
+
+  await runMiddleware(request, response, cors)
+
   if (request.method !== "GET") {
     return response.status(405).json({
       type: "Error",
