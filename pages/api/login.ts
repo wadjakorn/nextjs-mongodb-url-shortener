@@ -26,12 +26,12 @@ export default async function Login(
         });
     }
     let { username, password } = request.body;
-    console.log({ loginBody: request.body })
+    // console.log({ loginBody: request.body })
     // remove special characters
     // prevent noSQL injection
     username = username.replace(/[^a-zA-Z0-9]/g, "");
     password = password.replace(/[^a-zA-Z0-9]/g, "");
-    console.log({ username, password })
+    // console.log({ username, password })
     // validate
     if (!username || !password) {
         return response.status(400).json({

@@ -32,44 +32,50 @@ export default async function ListLink(
   }
 
   const query = request.query;
+  // pagination
   const limit = Number(query.limit) || 50;
   const page = Number(query.page) || 1;
   const skip = (page - 1) * limit;
+  // search
   const search = query.search as string;
   const searchRules = query.searchRules as string;
+  // sort
   const sortBy = query.sortBy as string;
   const sortDir = query.sortDir as string;
  
   try {
     const coll = await urlInfColl()
     const filter: Filter<UrlInfo> = { deletedAt: { $exists: false } }
-    if (search) {
-      const searchRuleSplit = searchRules.split(",")
-      searchRuleSplit.forEach((key: string) => {
-        if (key == "title") {
-          pushOr(filter, { title: { $regex: search, $options: "i" }})
-        }
-        if (key == "uid") {
-          pushOr(filter, { uid: search })
-        }
-        if (key == "tags") {
-          pushOr(filter, { tags: search })
+    if (search && searchRules) {
+      searchRules.split(",").forEach((key: string) => {
+        switch (key) {
+          case "title":
+            pushOr(filter, { title: { $regex: search, $options: "i" }})
+            break;
+          case "uid":
+            pushOr(filter, { uid: search })
+            break;
+          case "tags":
+            pushOr(filter, { tags: search })
+            break;
         }
       })
     }
-    let sortDirection: 1 | -1 = -1
-    if (sortDir) {
-      sortDirection = sortDir === 'desc' ? -1 : 1
-    }
-    let sort: Sort = { createdAt: sortDirection }
-    if (sortBy) {
-      sort = {
+ 
+    let prepareFind = coll.find(filter);
+    let prepareCount = coll.countDocuments(filter);
+
+    if (sortDir && sortBy) {
+      const sortDirection = sortDir === 'desc' ? -1 : 1
+      prepareFind = prepareFind.sort({
         [`${sortBy}`]: sortDirection
-      }
+      });
+    } else {
+      prepareFind = prepareFind.sort({ createdAt: -1 });
     }
 
-    const count = await coll.countDocuments(filter);
-    const list = await coll.find(filter).sort({ ...sort }).skip(skip).limit(limit).toArray();
+    const list = await prepareFind.skip(skip).limit(limit).toArray();
+    const count = await prepareCount;
 
     response.status(200);
     response.send({

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Table, Row, Col, Text, Link, Button, Popover, Badge, Loading, Input, Checkbox, Container } from '@nextui-org/react';
+import { Table, Row, Col, Text, Link, Button, Popover, Badge, Loading, Input, Checkbox, Container, useAsyncList, SortDescriptor } from '@nextui-org/react';
 import { UrlInfo, RespDataList, CreateRespData, DeleteRespData, Column } from '../types';
 import { IconButton } from './IconButton';
 import { EyeIcon } from './EyeIcon';
@@ -13,6 +13,41 @@ import { DeleteIcon } from './DeleteIcon';
 import { DeleteLink } from './DeleteLink';
 import { ExlinkIcon } from './ExlinkIcon';
 import TopboxStyle from '../styles/TopBox.module.css';
+import dayjs, { Dayjs } from "dayjs";
+
+const columns: Column[] = [
+    {
+        key: "latestClick",
+        label: "latest click",
+        allowsSorting: true,
+    },
+    {
+        key: "visits",
+        label: "visits",
+        allowsSorting: false,
+    },
+    {
+        key: "title",
+        label: "title",
+        allowsSorting: true,
+    },
+    {
+        key: "shortUrl",
+        label: "short URL",
+        allowsSorting: true,
+    },
+    {
+        key: "tags",
+        label: "tags",
+        allowsSorting: false,
+    },
+    {
+        key: "actions",
+        label: "actions",
+        allowsSorting: false,
+    },
+];
+
 
 export default function Links() {
     const router = useRouter()
@@ -30,8 +65,10 @@ export default function Links() {
     const [createdResp, setCreatedResp] = useState<CreateRespData>(null)
     const [deletedResp, setDeletedResp] = useState<DeleteRespData>(null)
     const [errorMsg, setErrorMsg] = useState<string>(null)
-    const [sortBy, setSortBy] = useState<string>((router.query.sortBy as string) ?? '')
-    const [sortDir, setSortDir] = useState<string>((router.query.sortDir as string) ?? '')
+    const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+        column: 'title',
+        direction: 'ascending'
+    })
 
     useEffect(() => {
         const headers: HeadersInit = {
@@ -45,12 +82,11 @@ export default function Links() {
         if (searchRules.length) {
             options += `&searchRules=${searchRules.join(',')}`
         }
-        if (sortBy) {
-            options += `&sortBy=${sortBy}`
+        if (sortDescriptor) {
+            options += `&sortBy=${sortDescriptor.column}`
+            options += `&sortDir=${sortDescriptor.direction == 'ascending' ? 'asc' : 'desc'}`
         }
-        if (sortDir) {
-            options += `&sortDir=${sortDir}`
-        }
+
         fetch(`/api/links?limit=${limit}&page=${page}${options}`, { headers } )
             .then((res) => res.json())
             .then((resp: RespDataList) => {
@@ -74,7 +110,7 @@ export default function Links() {
                     },
                 })
             })
-    }, [page, createdResp, deletedResp, refresh, sortBy, sortDir])
+    }, [page, createdResp, deletedResp, refresh, sortDescriptor])
 
     useEffect(() => {
         if (refresh) {
@@ -84,28 +120,6 @@ export default function Links() {
         }
     }, [refresh])
 
-    const columns: Column[] = [
-    {
-        key: "visits",
-        label: "visits",
-    },
-    {
-        key: "title",
-        label: "title",
-    },
-    {
-        key: "shortUrl",
-        label: "short URL",
-    },
-    {
-        key: "tags",
-        label: "tags",
-    },
-    {
-        key: "actions",
-        label: "actions",
-    },
-    ];
 
     const paging = (gotoPage: number) => {
         if (gotoPage > totalPages || gotoPage < 1) {
@@ -187,28 +201,43 @@ export default function Links() {
         )
     }
 
+    function renderTags(item: UrlInfo) {
+        return (
+            <Table.Cell>
+                {item.tags?.map((tag) => (
+                    <Badge key={tag} className={styles['tag']}>{tag}</Badge>
+                ))}
+            </Table.Cell>
+        )
+    }
+
+    function renderVisits(item: UrlInfo) {
+        return (
+            <Table.Cell>
+                {item.visits?.reduce((total, v) => { if(v.from && v.from !== 'unknown') {total+=v.count;} return total; } ,0)}
+            </Table.Cell>
+        )
+    }
+
     function renderCell(item: UrlInfo, columnKey: string) {
-        if (columnKey === 'shortUrl') {
-            return (renderShortlink(item)
-            )
-        } else if (columnKey === "actions") {
-            return renderActions(item);
-        } else if (columnKey === 'tags') {
-            return (
-                <Table.Cell>
-                    {item.tags?.map((tag) => (
-                        <Badge key={tag} className={styles['tag']}>{tag}</Badge>
-                    ))}
-                </Table.Cell>
-            )
-        } else if (columnKey === 'visits') {
-            return (
-                <Table.Cell>
-                    {item.visits?.reduce((total, v) => { if(v.from && v.from !== 'unknown') {total+=v.count;} return total; } ,0)}
-                </Table.Cell>
-            )
+        switch (columnKey) {
+            case 'shortUrl':
+                return renderShortlink(item)
+            case 'actions':
+                return renderActions(item)
+            case 'tags':
+                return renderTags(item)
+            case 'visits':
+                return renderVisits(item)
+            case 'latestClick':
+                let dateStr = '';
+                if (item[columnKey]) {
+                    dateStr = dayjs(item[columnKey]).format('YYYY-MM-DD HH:mm:ss')
+                }
+                return <Table.Cell><Text className={styles['col-width']}>{dateStr}</Text></Table.Cell>
+            default:
+                return <Table.Cell><Text className={styles['col-width']}>{item[columnKey]}</Text></Table.Cell>
         }
-        return <Table.Cell><Text className={styles['col-width']}>{item[columnKey]}</Text></Table.Cell>
     }
 
     function doSearch() {
@@ -226,9 +255,11 @@ export default function Links() {
         })
     }
 
-    async function sort() {
-        setSortBy('title')
-        setSortDir('asc')
+    async function resetSort() {
+        setSortDescriptor({
+            column: 'createdAt',
+            direction: 'descending',
+        })
     }
 
     function renderTable() {
@@ -262,10 +293,12 @@ export default function Links() {
                     height: "auto",
                     minWidth: "100%",
                 }}
+                sortDescriptor={sortDescriptor}
+                onSortChange={(descriptor: SortDescriptor) => setSortDescriptor(descriptor)}
             >
                 <Table.Header columns={columns}>
                     {(column) => (
-                        <Table.Column key={column.key}>{column.label}</Table.Column>
+                        <Table.Column key={column.key} allowsSorting={column.allowsSorting}>{column.label}</Table.Column>
                     )}
                 </Table.Header>
                 <Table.Body items={resp.data}>
@@ -296,9 +329,9 @@ export default function Links() {
                     <Button className={TopboxStyle.searchBtn} size={'sm'} onPress={() => doSearch()}>
                         Find
                     </Button>
-                    {/* <Button className={TopboxStyle.searchBtn} size={'sm'} onPress={() => sort()}>
-                        SortTitle
-                    </Button> */}
+                    <Button className={TopboxStyle.searchBtn} size={'sm'} onPress={() => resetSort()}>
+                        Reset Sort
+                    </Button>
                     <div className={TopboxStyle.rules}>
                         <Checkbox.Group
                             size='sm'

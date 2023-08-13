@@ -13,12 +13,15 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   if (urlInfo) {
     if (!isTest) {
       const from = (request.query.from ?? "unknown") as keyof Visit;
-      console.info(formatLog(`from: ${from}`));
+      // console.info(formatLog(`from: ${from}`));
       const updateObj = new UpdateUrlInfo(urlInfo);
       updateObj.setLatestClick(new Date());
       updateObj.incVisit(from)
-      console.info({ up: updateObj.getUpdateObj() });
+      // console.info({ up: updateObj.getUpdateObj() });
       // TODO: save visit history
+
+      Event
+
       await urlInfoCollection.updateOne(
         {
           _id: urlInfo._id,

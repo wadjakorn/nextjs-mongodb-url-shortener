@@ -127,6 +127,17 @@ export class UpdateUrlInfo {
         this.$set.latestClick = latestClick;
     }
     incVisit(from: string, count: number = 1) {
+        // validate from values
+        if (from.startsWith('fb')) {
+            from = 'fb';
+        } else if (from.startsWith('yt')) {
+            from = 'yt';
+        } else if (from.startsWith('tt')) {
+            from = 'tt';
+        } else if (from.startsWith('ig')) {
+            from = 'ig';
+        }
+
         const i = this._urlInfo.visits?.findIndex((v) => v.from === from);
         if (i >= 0) {
             this.$inc = {
@@ -168,4 +179,5 @@ export class CreateLinkInputs {
 export class Column {
     key: string;
     label: string;
+    allowsSorting: boolean;
 }
