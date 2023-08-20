@@ -1,6 +1,6 @@
  import { NextApiRequest, NextApiResponse, NextPage } from "next";
 import Head from "next/head";
-import { UpdateUrlInfo, Visit } from "../types";
+import { UpdateUrlInfo, UrlInfo, Visit } from "../types";
 import { urlInfColl } from "../db/url-info-collection";
 import { RedisRepo } from "../repositories/url-info-repo";
  
@@ -9,17 +9,22 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   const isTest = request.query.test as string
 
   // get cache
-  const cache = await (new RedisRepo()).getByUid(uid)
-  if (cache) {
-    console.log(`found cache: ${uid}`)
-    return {
-      redirect: {
-        destination: cache.link,
-        permanent: false,
-      },
-    };
-  } else {
-    console.log(`no cache!!!: ${uid}`)
+  let cache: UrlInfo
+  try {
+    cache = await (new RedisRepo()).getByUid(uid)
+    if (cache) {
+      console.log(`found cache: ${uid}`)
+      return {
+        redirect: {
+          destination: cache.link,
+          permanent: false,
+        },
+      };
+    } else {
+      console.log(`no cache!!!: ${uid}`)
+    }
+  } catch (err) {
+    console.log(`error while getting cache: ${err}`)
   }
 
   // if not found in cache, get from db
