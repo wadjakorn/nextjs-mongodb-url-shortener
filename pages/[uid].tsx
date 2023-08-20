@@ -14,12 +14,6 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
     cache = await (new RedisRepo()).getByUid(uid)
     if (cache) {
       console.log(`found cache: ${uid}`)
-      return {
-        redirect: {
-          destination: cache.link,
-          permanent: false,
-        },
-      };
     } else {
       console.log(`no cache!!!: ${uid}`)
     }
@@ -28,8 +22,11 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   }
 
   // if not found in cache, get from db
-  const urlInfoCollection = await urlInfColl()
-  const urlInfo = await urlInfoCollection.findOne({ uid })
+  let urlInfo: UrlInfo
+  if (!cache) {
+    const urlInfoCollection = await urlInfColl()
+    urlInfo = await urlInfoCollection.findOne({ uid })
+  }
 
   if (!urlInfo) {
     return {
