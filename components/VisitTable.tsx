@@ -7,10 +7,12 @@ export function VisitTable(props: { visits : Visit[] }) {
         {
             key: "from",
             label: "from",
+            allowsSorting: false,
         },
         {
             key: "count",
             label: "count",
+            allowsSorting: false,
         },
     ]
 

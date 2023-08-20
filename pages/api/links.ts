@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { urlInfColl } from "../../db/url-info-collection";
 import { UrlInfo } from "../../types";
-import { Filter, Sort, WithId } from "mongodb";
+import { Filter, WithId } from "mongodb";
 import { authenticateToken } from "../../utils";
 import { runMiddleware, cors } from "./cors";
 

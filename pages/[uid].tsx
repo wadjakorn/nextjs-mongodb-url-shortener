@@ -2,44 +2,59 @@
 import Head from "next/head";
 import { UpdateUrlInfo, Visit } from "../types";
 import { urlInfColl } from "../db/url-info-collection";
-import { formatLog } from "../utils";
+import { RedisRepo } from "../repositories/url-info-repo";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
-  const uid = request.query.uid as string;
-  const isTest = request.query.test as string;
-  const urlInfoCollection = await urlInfColl();
-  const urlInfo = await urlInfoCollection.findOne({ uid });
- 
-  if (urlInfo) {
-    if (!isTest) {
-      const from = (request.query.from ?? "unknown") as keyof Visit;
-      // console.info(formatLog(`from: ${from}`));
-      const updateObj = new UpdateUrlInfo(urlInfo);
-      updateObj.setLatestClick(new Date());
-      updateObj.incVisit(from)
-      // console.info({ up: updateObj.getUpdateObj() });
-      // TODO: save visit history
+  const uid = request.query.uid as string
+  const isTest = request.query.test as string
 
-      Event
-
-      await urlInfoCollection.updateOne(
-        {
-          _id: urlInfo._id,
-        },
-        {...updateObj.getUpdateObj()},
-      );
-    }
-
+  // get cache
+  const cache = await (new RedisRepo()).getByUid(uid)
+  if (cache) {
+    console.log(`found cache: ${uid}`)
     return {
       redirect: {
-        destination: urlInfo.link,
+        destination: cache.link,
         permanent: false,
       },
     };
+  } else {
+    console.log(`no cache!!!: ${uid}`)
   }
- 
+
+  // if not found in cache, get from db
+  const urlInfoCollection = await urlInfColl()
+  const urlInfo = await urlInfoCollection.findOne({ uid })
+
+  if (!urlInfo) {
+    return {
+      props: {},
+    };
+  }
+
+  // if not found in cache, create cache
+  if (!cache) {
+    try {
+      await fetch(`${process.env.HOST}/api/cache`, { method: 'POST', body: JSON.stringify(urlInfo)})
+    } catch (err) {
+      console.log(`error while caching: ${err}`)
+    }
+  }
+  
+  // if not test, update stats
+  if (!isTest) {
+    try {
+      await fetch(`${process.env.HOST}/api/stats`, { method: 'POST', body: JSON.stringify(urlInfo)})
+    } catch (err) {
+      console.log(`error while caching: ${err}`)
+    }
+  }
+
   return {
-    props: {},
+    redirect: {
+      destination: urlInfo.link,
+      permanent: false,
+    },
   };
 }
  
