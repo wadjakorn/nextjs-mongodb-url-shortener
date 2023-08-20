@@ -7,13 +7,15 @@ import { RedisRepo } from "../repositories/url-info-repo";
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const uid = request.query.uid as string
   const isTest = request.query.test as string
+  let urlInfo: UrlInfo
+  let cache: UrlInfo
 
   // get cache
-  let cache: UrlInfo
   try {
     cache = await (new RedisRepo()).getByUid(uid)
     if (cache) {
       console.log(`found cache: ${uid}`)
+      urlInfo = cache
     } else {
       console.log(`no cache!!!: ${uid}`)
     }
@@ -22,7 +24,6 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   }
 
   // if not found in cache, get from db
-  let urlInfo: UrlInfo
   if (!cache) {
     const urlInfoCollection = await urlInfColl()
     urlInfo = await urlInfoCollection.findOne({ uid })
