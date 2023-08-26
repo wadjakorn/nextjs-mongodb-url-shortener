@@ -13,7 +13,7 @@ import { DeleteIcon } from './DeleteIcon';
 import { DeleteLink } from './DeleteLink';
 import { ExlinkIcon } from './ExlinkIcon';
 import TopboxStyle from '../styles/TopBox.module.css';
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
 const columns: Column[] = [
     {
@@ -71,6 +71,7 @@ export default function Links() {
     })
 
     useEffect(() => {
+        setLoading(true)
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -112,13 +113,13 @@ export default function Links() {
             })
     }, [page, createdResp, deletedResp, refresh, sortDescriptor])
 
-    useEffect(() => {
-        if (refresh) {
-            setLoading(true)
-        } else {
-            setLoading(false)
-        }
-    }, [refresh])
+    // useEffect(() => {
+    //     if (refresh) {
+    //         setLoading(true)
+    //     } else {
+    //         setLoading(false)
+    //     }
+    // }, [refresh])
 
 
     const paging = (gotoPage: number) => {

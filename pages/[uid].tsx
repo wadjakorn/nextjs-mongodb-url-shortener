@@ -1,8 +1,9 @@
  import { NextApiRequest, NextApiResponse, NextPage } from "next";
 import Head from "next/head";
-import { UrlInfo } from "../types";
+import { UrlInfo, Visit } from "../types";
 import { urlInfColl } from "../db/url-info-collection";
 import { RedisRepo } from "../repositories/url-info-repo";
+import { updateStats } from "./api/stats";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const uid = request.query.uid as string
@@ -31,6 +32,7 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   }
 
   if (!urlInfo) {
+    // TODO: save log
     return {
       props: {},
     };
@@ -48,13 +50,15 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   // if not test, update stats
   if (!isTest) {
     try {
-      await fetch(`${process.env.HOST}/api/stats?from=${from}`, { method: 'POST', body: JSON.stringify(urlInfo)})
+      const from = (request.query.from ?? "unknown") as keyof Visit
+      await updateStats(urlInfo, from)
     } catch (err) {
-      console.log(`error while caching: ${err}`)
+      console.log(`error while update stats: ${err}`)
     }
   }
 
   return {
+    // TODO: save log
     redirect: {
       destination: urlInfo.link,
       permanent: false,

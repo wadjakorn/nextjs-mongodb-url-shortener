@@ -1,6 +1,6 @@
-import { Collection, Filter, ObjectId, UpdateFilter, UpdateResult } from "mongodb";
+import { Collection, Filter, ObjectId, UpdateFilter } from "mongodb";
 import { UrlInfo } from "../types";
-import kv from '@vercel/kv';
+import { kv } from '@vercel/kv';
 
 export class Err { code?: number; message?: string; }
 
