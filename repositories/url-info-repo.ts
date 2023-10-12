@@ -67,6 +67,14 @@ export class MongoRepo implements Repository {
 
 export class RedisRepo implements Repository {
 
+  async getRawByKey(key: string): Promise<string | null> {
+    return kv.get<string>(key);
+  }
+
+  async setRaw(key: string, val: string): Promise<string> {
+    return kv.set(key, val);
+  }
+
   async getByUid(uid: string): Promise<UrlInfo | null> {
     const raw = await kv.get<string>(uid);
     const { link, title, shortUrl, createdAt, tags, latestClick, visits } = (JSON.parse(decodeURI(raw))) as UrlInfo;

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { UpdateUrlInfo, UrlInfo, Visit } from "../../../types";
-import { MongoRepo } from "../../../repositories/url-info-repo";
+import { RedisStats, UpdateUrlInfo, UrlInfo, Visit } from "../../../types";
+import { MongoRepo, RedisRepo } from "../../../repositories/url-info-repo";
 import { urlInfColl } from "../../../db/url-info-collection";
 
 export default async function Stats(
@@ -53,6 +53,31 @@ export const updateStats = async function(urlInfo: UrlInfo, from: keyof Visit): 
         return Promise.resolve()
     } catch (e) {
         console.log(`failed to update stats for ${urlInfo.uid}, error: ${e}`)
+        return Promise.reject()
+    }
+}
+
+export const updateStatsV2 = async function(uid: string, from: string): Promise<void> {
+    try {
+        const cacheRepo = new RedisRepo()
+        // find existing
+        const key = `stats:${uid}`;
+        const raw = await cacheRepo.getRawByKey(key);
+        let redisStats: RedisStats;
+        if (raw) {
+            redisStats = JSON.parse(decodeURI(raw)) as RedisStats;
+        } else {
+            redisStats =  new RedisStats(uid);
+        }
+
+        redisStats.last_click = new Date();
+        
+        // upsert cache
+        const val = encodeURI(JSON.stringify(redisStats));
+        console.log({updateStatsV2: {key,val}});
+        await cacheRepo.setRaw(key, val);
+    } catch (e) {
+        console.log(`failed to updateStatsV2 for ${uid}, error: ${e}`)
         return Promise.reject()
     }
 }

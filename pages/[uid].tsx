@@ -3,7 +3,7 @@ import Head from "next/head";
 import { UrlInfo, Visit } from "../types";
 import { urlInfColl } from "../db/url-info-collection";
 import { RedisRepo } from "../repositories/url-info-repo";
-import { updateStats } from "./api/stats";
+import { updateStats, updateStatsV2 } from "./api/stats";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const uid = request.query.uid as string
@@ -48,14 +48,15 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   }
   
   // if not test, update stats
-  // if (!isTest) {
-  //   try {
-  //     const from = (request.query.from ?? "unknown") as keyof Visit
-  //     await updateStats(urlInfo, from)
-  //   } catch (err) {
-  //     console.log(`error while update stats: ${err}`)
-  //   }
-  // }
+  if (!isTest) {
+    try {
+      const from = (request.query.from ?? "unknown") as keyof Visit
+      // await updateStats(urlInfo, from)
+      await updateStatsV2(uid, from);
+    } catch (err) {
+      console.log(`error while updateStatsV2: ${err}`)
+    }
+  }
 
   return {
     // TODO: save log

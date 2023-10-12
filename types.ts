@@ -181,3 +181,18 @@ export class Column {
     label: string;
     allowsSorting: boolean;
 }
+
+export class RedisStats {
+    uid: string;
+    last_click: Date;
+    from_fb: number;
+    from_yt: number;
+    from_tt: number;
+    from_ig: number;
+    from_web: number;
+    unknown: number;
+
+    constructor(uid: string) {
+        this.uid = uid;
+    }
+}
