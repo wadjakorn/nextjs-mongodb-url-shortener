@@ -48,14 +48,14 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   }
   
   // if not test, update stats
-  if (!isTest) {
-    try {
-      const from = (request.query.from ?? "unknown") as keyof Visit
-      await updateStats(urlInfo, from)
-    } catch (err) {
-      console.log(`error while update stats: ${err}`)
-    }
-  }
+  // if (!isTest) {
+  //   try {
+  //     const from = (request.query.from ?? "unknown") as keyof Visit
+  //     await updateStats(urlInfo, from)
+  //   } catch (err) {
+  //     console.log(`error while update stats: ${err}`)
+  //   }
+  // }
 
   return {
     // TODO: save log

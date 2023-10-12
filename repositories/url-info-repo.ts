@@ -69,8 +69,11 @@ export class RedisRepo implements Repository {
 
   async getByUid(uid: string): Promise<UrlInfo | null> {
     const raw = await kv.get<string>(uid);
-    const jsonRes = JSON.parse(decodeURI(raw))
-    return jsonRes as UrlInfo;
+    const { link, title, shortUrl, createdAt, tags, latestClick, visits } = (JSON.parse(decodeURI(raw))) as UrlInfo;
+    const urlInfo = new UrlInfo(uid, link, title, shortUrl, createdAt, tags);
+    urlInfo.setLatestClick(latestClick);
+    urlInfo.visits = visits;
+    return urlInfo;
   }
 
   async insert (urlInfo: UrlInfo): Promise<UrlInfo> {
