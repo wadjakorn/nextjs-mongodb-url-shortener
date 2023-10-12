@@ -4,6 +4,7 @@ import { UrlInfo, Visit } from "../types";
 import { urlInfColl } from "../db/url-info-collection";
 import { RedisRepo } from "../repositories/url-info-repo";
 import { updateStats, updateStatsV2 } from "./api/stats";
+import { createCache } from "../cache/create";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const uid = request.query.uid as string
@@ -41,7 +42,8 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   // if not found in cache, create cache
   if (!cache) {
     try {
-      await fetch(`${process.env.HOST}/api/cache`, { method: 'POST', body: JSON.stringify(urlInfo)})
+      // await fetch(`${process.env.HOST}/api/cache`, { method: 'POST', body: JSON.stringify(urlInfo)})
+      await createCache(urlInfo)
     } catch (err) {
       console.log(`error while caching: ${err}`)
     }

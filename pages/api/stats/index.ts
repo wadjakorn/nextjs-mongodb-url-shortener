@@ -71,7 +71,21 @@ export const updateStatsV2 = async function(uid: string, from: string): Promise<
         }
 
         redisStats.last_click = new Date();
-        
+
+        if (from.startsWith('fb')) {
+            redisStats.from_fb = redisStats.from_fb ? redisStats.from_fb + 1 : 1;
+        } else if (from.startsWith('yt')) {
+            redisStats.from_yt = redisStats.from_yt ? redisStats.from_yt + 1 : 1;
+        } else if (from.startsWith('tt')) {
+            redisStats.from_tt = redisStats.from_tt ? redisStats.from_tt + 1 : 1;
+        } else if (from.startsWith('ig')) {
+            redisStats.from_ig = redisStats.from_ig ? redisStats.from_ig + 1 : 1;
+        } else if (from.startsWith('web')) {
+            redisStats.from_web = redisStats.from_web ? redisStats.from_web + 1 : 1;
+        } else {
+            redisStats.from_unknown = redisStats.from_unknown ? redisStats.from_unknown + 1 : 1;
+        }
+
         // upsert cache
         const val = encodeURI(JSON.stringify(redisStats));
         console.log({updateStatsV2: {key,val}});

@@ -190,7 +190,7 @@ export class RedisStats {
     from_tt: number;
     from_ig: number;
     from_web: number;
-    unknown: number;
+    from_unknown: number;
 
     constructor(uid: string) {
         this.uid = uid;
