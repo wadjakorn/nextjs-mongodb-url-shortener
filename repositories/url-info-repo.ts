@@ -1,5 +1,5 @@
 import { Collection, Filter, ObjectId, UpdateFilter } from "mongodb";
-import { UrlInfo } from "../types";
+import { RedisStats, UrlInfo } from "../types";
 import { kv } from '@vercel/kv';
 
 export class Err { code?: number; message?: string; }
@@ -73,6 +73,18 @@ export class RedisRepo implements Repository {
 
   async setRaw(key: string, val: string): Promise<string> {
     return kv.set(key, val);
+  }
+
+  async getStats(uid: string): Promise<RedisStats> {
+    const key = `stats:${uid}`;
+    const raw = await this.getRawByKey(key);
+    let redisStats: RedisStats;
+    if (raw) {
+        redisStats = JSON.parse(decodeURI(raw)) as RedisStats;
+    } else {
+        redisStats =  new RedisStats(uid);
+    }
+    return redisStats
   }
 
   async getByUid(uid: string): Promise<UrlInfo | null> {

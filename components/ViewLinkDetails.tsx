@@ -6,6 +6,7 @@ import { CopyIcon } from './CopyIcon';
 import { copy } from '../utils';
 import { VisitTable } from "./VisitTable";
 import { SocialShareBtn } from "./SocialShareBtn";
+import { kv } from "@vercel/kv";
 
 export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
     const [item, setItem] = useState<UrlInfo>(props.item);

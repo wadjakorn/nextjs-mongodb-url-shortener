@@ -44,6 +44,12 @@ export class DeleteRespData {
     message: string;
 }
 
+export class StatsResp {
+    type: string;
+    code: number;
+    data: RedisStats;
+}
+
 export class UrlInfo {
     _id: ObjectId;
     uid: string;
@@ -180,19 +186,43 @@ export class Column {
     key: string;
     label: string;
     allowsSorting: boolean;
+    transform?: Function
 }
 
 export class RedisStats {
     uid: string;
     last_click: Date;
-    from_fb: number;
-    from_yt: number;
-    from_tt: number;
-    from_ig: number;
-    from_web: number;
-    from_unknown: number;
+    from_fb: number = 0;
+    from_yt: number = 0;
+    from_tt: number = 0;
+    from_ig: number = 0;
+    from_web: number = 0;
+    from_unknown: number = 0;
 
     constructor(uid: string) {
         this.uid = uid;
+    }
+
+    toRedisStats(r: any) {
+        const s = new RedisStats(r.uid)
+        s.last_click = r.last_click
+        s.from_fb = r.from_fb
+        s.from_ig = r.from_ig
+        s.from_tt = r.from_tt
+        s.from_yt = r.from_yt
+        s.from_web = r.from_web
+        s.from_unknown = r.from_unknown
+        return s
+    }
+
+    toVisits(): Visit[] {
+        const visits: Visit[] = []
+        visits.push({ from: 'fb', count: this.from_fb })
+        visits.push({ from: 'yt', count: this.from_yt })
+        visits.push({ from: 'tt', count: this.from_tt })
+        visits.push({ from: 'ig', count: this.from_ig })
+        visits.push({ from: 'web', count: this.from_web })
+        visits.push({ from: 'unknown', count: this.from_unknown })
+        return visits
     }
 }

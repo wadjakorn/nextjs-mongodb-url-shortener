@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Table, Row, Col, Text, Link, Button, Popover, Badge, Loading, Input, Checkbox, Container, useAsyncList, SortDescriptor } from '@nextui-org/react';
-import { UrlInfo, RespDataList, CreateRespData, DeleteRespData, Column } from '../types';
+import { UrlInfo, RespDataList, CreateRespData, DeleteRespData, Column, StatsResp, RedisStats } from '../types';
 import { IconButton } from './IconButton';
 import { EyeIcon } from './EyeIcon';
 import { CopyIcon } from './CopyIcon';
@@ -13,19 +13,23 @@ import { DeleteIcon } from './DeleteIcon';
 import { DeleteLink } from './DeleteLink';
 import { ExlinkIcon } from './ExlinkIcon';
 import TopboxStyle from '../styles/TopBox.module.css';
-import dayjs from "dayjs";
 
 const columns: Column[] = [
     {
-        key: "latestClick",
-        label: "latest click",
+        key: "createdAt",
+        label: "created at",
         allowsSorting: true,
     },
-    {
-        key: "visits",
-        label: "visits",
-        allowsSorting: false,
-    },
+    // {
+    //     key: "latestClick",
+    //     label: "latest click",
+    //     allowsSorting: true,
+    // },
+    // {
+    //     key: "visits",
+    //     label: "visits",
+    //     allowsSorting: false,
+    // },
     {
         key: "title",
         label: "title",
@@ -66,8 +70,8 @@ export default function Links() {
     const [deletedResp, setDeletedResp] = useState<DeleteRespData>(null)
     const [errorMsg, setErrorMsg] = useState<string>(null)
     const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-        column: 'title',
-        direction: 'ascending'
+        column: 'createdAt',
+        direction: 'descending'
     })
 
     useEffect(() => {
@@ -161,7 +165,6 @@ export default function Links() {
         </Button.Group>)
     }
 
-
     function renderShortlink(urlInfo: UrlInfo) {
         return (
             <Table.Cell>
@@ -228,14 +231,14 @@ export default function Links() {
                 return renderActions(item)
             case 'tags':
                 return renderTags(item)
-            case 'visits':
-                return renderVisits(item)
-            case 'latestClick':
-                let dateStr = '';
-                if (item[columnKey]) {
-                    dateStr = dayjs(item[columnKey]).format('YYYY-MM-DD HH:mm:ss')
-                }
-                return <Table.Cell><Text className={styles['col-width']}>{dateStr}</Text></Table.Cell>
+            // case 'visits':
+            //     return renderVisits(item)
+            // case 'latestClick':
+            //     let dateStr = '';
+            //     if (item[columnKey]) {
+            //         dateStr = dayjs(item[columnKey]).format('YYYY-MM-DD HH:mm:ss')
+            //     }
+            //     return <Table.Cell><Text className={styles['col-width']}>{dateStr}</Text></Table.Cell>
             default:
                 return <Table.Cell><Text className={styles['col-width']}>{item[columnKey]}</Text></Table.Cell>
         }
@@ -246,8 +249,31 @@ export default function Links() {
         setRefresh(!refresh);
     }
 
-    function openDetails(item: UrlInfo) {
-        setShowItemDetails(item)
+    async function openDetails(item: UrlInfo) {
+        setShowItemDetails(await fillStats(item))
+    }
+
+    async function fillStats(item: UrlInfo): Promise<UrlInfo> {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+        return fetch(`/api/stats/${item.uid}`, { headers } )
+            .then((res) => res.json())
+            .then((resp: StatsResp) => {
+                if (resp.code === 401 || resp.code === 403) {
+                    router.push('/login')
+                    return;
+                }
+                if (resp.code !== 200) {
+                    setErrorMsg('unknown error')
+                    return;
+                }
+                const stats = new RedisStats(resp.data.uid).toRedisStats(resp.data)
+                item.latestClick = stats.last_click
+                item.visits = stats.toVisits()
+                return item
+            })
     }
 
     function openDetailsFull(item: UrlInfo) {
@@ -287,7 +313,6 @@ export default function Links() {
         }
         return (<div>
             <Table 
-                lined
                 aria-label='table'
                 aria-labelledby='table'
                 css={{
@@ -296,6 +321,7 @@ export default function Links() {
                 }}
                 sortDescriptor={sortDescriptor}
                 onSortChange={(descriptor: SortDescriptor) => setSortDescriptor(descriptor)}
+                lined={true}
             >
                 <Table.Header columns={columns}>
                     {(column) => (
@@ -305,7 +331,7 @@ export default function Links() {
                 <Table.Body items={resp.data}>
                     {(item: UrlInfo) => (
                     <Table.Row key={item.uid}>
-                        {(columnKey: string) => renderCell(item, columnKey)}
+                        {(columnKey: string) => renderCell(item,columnKey)}
                     </Table.Row>
                     )}
                 </Table.Body>
