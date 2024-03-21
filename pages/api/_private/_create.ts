@@ -1,9 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { customAlphabet } from "nanoid";
 import { UrlInfo } from "../../../types";
-import { urlInfColl } from "../../../db/url-info-collection";
-import { Repository, RedisRepo, MongoRepo } from "../../../repositories/url-info-repo";
- 
+import { Repository, chooseDB } from "../../../repositories/url-info-repo";
+
 const characters =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 const getHash = customAlphabet(characters, 4);
@@ -16,11 +15,13 @@ export async function createLink(
 ) {
   // TODO: customDomain, tags
 
-  const { link, title, customHash, tags, customDomain, v } = request.body;
-  domain = customDomain ?? domain;
-  var r: Repository
+  const { link, title, customHash, tags, customDomain, bulk } = request.body;
 
-  const isRedis = v == '2';
+  if (bulk) {
+    return createBulk(request, response)
+  }
+
+  domain = customDomain ?? domain;
 
   if (!link) {
     response.status(400).send({
@@ -31,21 +32,17 @@ export async function createLink(
     return;
   }
   try {
-
-    if (isRedis) {
-      console.log('is v2')
-      r = new RedisRepo()
-    } else {
-      console.log('is v1')
-      const coll = await urlInfColl();
-      r = new MongoRepo(coll)
-    }
-
+    const r: Repository = await chooseDB()
+    console.log({ customHash })
     const uid = customHash ?? getHash();
     const shortUrl = `${domain}/${uid}`;
     
-    var { code, message } = await r.validateCreate({ link, uid });
-    if (code || message) {
+    const urlInfo = new UrlInfo(uid, link, title, shortUrl, new Date(), tags);
+    console.log({ uid: urlInfo.uid })
+
+    const { inserted, error } = await r.insert(urlInfo);
+    if (error) {
+      const { code, message } = error;
       response.status(code);
       response.send({
         type: "error",
@@ -55,18 +52,14 @@ export async function createLink(
       return;
     }
 
-    const urlInfo = new UrlInfo(uid, link, title, shortUrl, new Date(), tags);
-    console.log({ uid: urlInfo.uid })
-
-    const res = await r.insert(urlInfo);
-    console.log({ createRes: res })
+    console.log({ createRes: inserted })
 
     response.status(201);
     response.send({
       type: "success",
       code: 201,
       data: {
-        shortUrl: res.shortUrl,
+        shortUrl: inserted.shortUrl,
         link,
       },
     });
@@ -93,3 +86,56 @@ export async function createLink(
 //   return res.json();
 // }
 
+async function createBulk(
+  request: NextApiRequest,
+  response: NextApiResponse
+) {
+  const r: Repository = await chooseDB()
+
+  request.body.list.forEach(async (each: JsonImport) => {
+    const { uid, link, title, tags } = each;
+    console.log({ uid })
+    const shortUrl = `${domain}/${uid}`;
+    const urlInfo = new UrlInfo(uid, link, title, shortUrl, new Date(), tags);
+  
+    const { inserted, error } = await r.insert(urlInfo);
+    if (error) {
+      console.log(`error on uid ${uid}, code: ${error.code}, message: ${error.message}`)
+    } else {
+      console.log(`inserted: ${inserted.uid}`)
+    }
+  })
+
+  response.status(201);
+  response.send({
+    type: "success",
+    code: 201,
+  });
+}
+
+class JsonImport {
+  uid: string;
+  link: string;
+  title: string;
+  shortUrl: string;
+  tags: string[];
+  deletedAt: { '$date': string }
+}
+
+/**{
+  "_id": {
+    "$oid": "644723028c083251c97295a3"
+  },
+  "uid": "OvMqh",
+  "link": "https://nuphy.com?sca_ref=3367632.Zer4Ym7uOa",
+  "title": "Nuphy",
+  "shortUrl": "https://i.tea2.one/OvMqh",
+  "createdAt": {
+    "$date": "2023-04-25T00:46:58.381Z"
+  },
+  "visits": [],
+  "latestClick": null,
+  "tags": [
+    "nuphy_aff"
+  ]
+}, */

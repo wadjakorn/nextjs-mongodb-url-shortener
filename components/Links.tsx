@@ -352,7 +352,7 @@ export default function Links() {
             <DeleteLink uid={showDeleteConfirm} onClose={(resp: DeleteRespData) => { if (!!resp) {setDeletedResp(resp)} setShowDeleteConfirm(null) }} />
             <div className={TopboxStyle.topbox}>
                 <div className={TopboxStyle.search}>
-                    <Input className={TopboxStyle.searchInput} size='sm' fullWidth id="search-input" aria-label='search' clearable placeholder='Search...' initialValue={searchText}/>
+                    <Input className={TopboxStyle.searchInput} size='sm' fullWidth id="search-input" aria-label='search' clearable placeholder={resp?.version} initialValue={searchText}/>
                     <Button className={TopboxStyle.searchBtn} size={'sm'} onPress={() => doSearch()}>
                         Find
                     </Button>

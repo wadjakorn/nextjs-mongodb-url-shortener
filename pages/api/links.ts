@@ -1,9 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { urlInfColl } from "../../db/url-info-collection";
-import { UrlInfo } from "../../types";
-import { Filter, WithId } from "mongodb";
+import { ListQuery, RespDataList } from "../../types";
 import { authenticateToken } from "../../utils";
 import { runMiddleware, cors } from "./cors";
+import { Repository, chooseDB } from "../../repositories/url-info-repo";
+
+const DB_VER = process.env.DB_VER;
 
 export default async function ListLink(
   request: NextApiRequest,
@@ -31,59 +32,20 @@ export default async function ListLink(
     }
   }
 
-  const query = request.query;
-  // pagination
-  const limit = Number(query.limit) || 50;
-  const page = Number(query.page) || 1;
-  const skip = (page - 1) * limit;
-  // search
-  const search = query.search as string;
-  const searchRules = query.searchRules as string;
-  // sort
-  const sortBy = query.sortBy as string;
-  const sortDir = query.sortDir as string;
+  const query: ListQuery = new ListQuery(request.query);
+  const r: Repository = await chooseDB()
  
   try {
-    const coll = await urlInfColl()
-    const filter: Filter<UrlInfo> = { deletedAt: { $exists: false } }
-    if (search && searchRules) {
-      searchRules.split(",").forEach((key: string) => {
-        switch (key) {
-          case "title":
-            pushOr(filter, { title: { $regex: search, $options: "i" }})
-            break;
-          case "uid":
-            pushOr(filter, { uid: search })
-            break;
-          case "tags":
-            pushOr(filter, { tags: search })
-            break;
-        }
-      })
-    }
- 
-    let prepareFind = coll.find(filter);
-    let prepareCount = coll.countDocuments(filter);
-
-    if (sortDir && sortBy) {
-      const sortDirection = sortDir === 'desc' ? -1 : 1
-      prepareFind = prepareFind.sort({
-        [`${sortBy}`]: sortDirection
-      });
-    } else {
-      prepareFind = prepareFind.sort({ createdAt: -1 });
-    }
-
-    const list = await prepareFind.skip(skip).limit(limit).toArray();
-    const count = await prepareCount;
-
-    response.status(200);
-    response.send({
+    const { list, count } = await r.list(query)
+    const resp: RespDataList = {
       type: "success",
       code: 200,
       totalLinks: count,
       data: list,
-    });
+      version: DB_VER,
+    }
+    response.status(200);
+    response.send(resp);
   } catch (e: any) {
     response.status(500);
     response.send({
@@ -92,12 +54,4 @@ export default async function ListLink(
       message: e.message,
     });
   }
-}
-
-function pushOr(filter: Filter<UrlInfo>, ...items: Filter<WithId<UrlInfo>>[]): Filter<UrlInfo> {
-  if (!filter.$or) {
-    filter.$or = []
-  }
-  filter.$or.push(...items)
-  return filter
 }

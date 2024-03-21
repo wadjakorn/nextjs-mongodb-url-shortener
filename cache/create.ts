@@ -7,5 +7,5 @@ export async function createCache(urlInfo: UrlInfo): Promise<UrlInfo> {
   urlInfo.latestClick = undefined;
   console.log({ createCacheObj: urlInfo })
   const res = await c.insert(urlInfo);
-  return res
+  return res.inserted
 }

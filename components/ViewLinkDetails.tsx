@@ -97,7 +97,7 @@ export function ViewLinkDetails(props: { item: UrlInfo, onClose: () => void }) {
         return (item &&
             <Modal.Body>
                 <Container css={{ p:0 }}>
-                    <Text h4>_id: {item._id.toString()}</Text>
+                    <Text h4>_id: {item._id?.toString()}</Text>
                     <form onSubmit={submitUpdate}>
                         <Container css={{ p:0, dflex: 'center'}} >
                             <Input clearable fullWidth label="original link" type="text" name="link" id="link" initialValue={item.link} />
