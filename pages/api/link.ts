@@ -24,7 +24,7 @@ export default async function CreateLink(
       });
     }
   }
-  
+
   switch (request.method) {
     case "POST":
       return createLink(request, response);

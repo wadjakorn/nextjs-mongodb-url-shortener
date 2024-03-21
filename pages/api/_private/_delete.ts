@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { UrlInfo } from "../../../types";
-import { urlInfColl } from "../../../db/url-info-collection";
-import { UpdateFilter } from "mongodb";
+import { chooseDB } from "../../../repositories/url-info-repo";
 
 export async function deleteLink(
   request: NextApiRequest,
@@ -17,33 +15,25 @@ export async function deleteLink(
     return;
   }
   try {
-    const coll = await urlInfColl();
-    const linkExists = await coll.findOne({
-      uid,
-    });
-    if (linkExists) {
-      const updateObj: UpdateFilter<UrlInfo> = {
-        $set: {
-          deletedAt: new Date(),
-        },
-      }
-      console.info({updateObj});
-      await coll.updateOne({
-        uid,
-      }, updateObj);
-      response.status(200);
+    const r = await chooseDB();
+    const { deleted, error } = await r.delete(uid);
+    if (error) {
+      const { code, message } = error;
+      response.status(code);
       response.send({
-        type: "success",
-        code: 200,
+        type: "error",
+        code,
+        message,
       });
-    } else {
-      response.status(404);
-      response.send({
-        type: "not found uid",
-        code: 404,
-        data: null,
-      });
+      return;
     }
+    response.status(200);
+    response.send({
+      type: "success",
+      code: 200,
+      data: deleted,
+    });
+    
   } catch (e: any) {
     response.status(500);
     response.send({

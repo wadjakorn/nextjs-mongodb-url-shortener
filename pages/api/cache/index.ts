@@ -24,7 +24,8 @@ export default async function Cache(
     let urlInfo = JSON.parse(request.body)
 
     if (!urlInfo._id) {
-        const repo = new MongoRepo(await urlInfColl())
+        const repo = new MongoRepo()
+        repo.setColl(await urlInfColl())
         urlInfo = await repo.getByUid(urlInfo.uid)
     }
 

@@ -42,7 +42,8 @@ export const updateStats = async function(urlInfo: UrlInfo, from: keyof Visit): 
     // TODO: save visit history
 
     try {
-        const repo = new MongoRepo(await urlInfColl())
+        const repo = new MongoRepo()
+        repo.setColl(await urlInfColl())
         await repo.updateOne(
             {
                 filter: { uid: urlInfo.uid },

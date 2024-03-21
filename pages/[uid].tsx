@@ -2,8 +2,8 @@
 import Head from "next/head";
 import { UrlInfo, Visit } from "../types";
 import { urlInfColl } from "../db/url-info-collection";
-import { RedisRepo } from "../repositories/url-info-repo";
-import { updateStats, updateStatsV2 } from "./api/stats";
+import { RedisRepo, getSqliteRepo } from "../repositories/url-info-repo";
+import { updateStatsV2 } from "./api/stats";
 import { createCache } from "../cache/create";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
@@ -30,6 +30,22 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   if (!cache) {
     const urlInfoCollection = await urlInfColl()
     urlInfo = await urlInfoCollection.findOne({ uid })
+    if (urlInfo) {
+      console.log(`found mongo: ${uid}`)
+    } else {
+      console.log(`no mongo!!!: ${uid}`)
+    }
+  }
+
+  // process.env.DB_VER === 'sqlite'
+  if (!urlInfo) {
+    const repo = await getSqliteRepo()
+    urlInfo = await repo.getByUid(uid)
+    if (urlInfo) {
+      console.log(`found sqlite: ${uid}`)
+    } else {
+      console.log(`no sqlite!!!: ${uid}`)
+    }
   }
 
   if (!urlInfo) {
@@ -53,7 +69,6 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   if (!isTest) {
     try {
       const from = (request.query.from ?? "unknown") as keyof Visit
-      // await updateStats(urlInfo, from)
       await updateStatsV2(uid, from);
     } catch (err) {
       console.log(`error while updateStatsV2: ${err}`)

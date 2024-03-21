@@ -1,10 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { urlInfColl } from "../../../db/url-info-collection";
-import { RedisStats, UrlInfo } from "../../../types";
-import { Filter } from "mongodb";
 import { authenticateToken } from "../../../utils";
 import { cors, runMiddleware } from "../cors";
-import { RedisRepo } from "../../../repositories/url-info-repo";
+import { chooseDB } from "../../../repositories/url-info-repo";
 
 export default async function Details(
   request: NextApiRequest,
@@ -33,17 +30,12 @@ export default async function Details(
   }
   
   const uid = request.query.uid as string;
-  // console.log({ q: request.query })
+  
   try {
-    const coll = await urlInfColl()
-    const filter: Filter<UrlInfo> = { deletedAt: { $exists: false }, uid }
-    const item = await coll.findOne(filter);
 
-    const r = new RedisRepo()
-    let stats = await r.getStats(uid)
-    stats = new RedisStats(stats.uid).toRedisStats(stats)
-    item.latestClick = stats.last_click
-    item.visits = stats.toVisits()
+    // TODO implement collect stats
+    const r = await chooseDB()
+    const item = await r.getByUid(uid)
 
     response.status(200);
     response.send({

@@ -9,6 +9,7 @@ export function CreateLink(props: { open: boolean, onClose: (resp: CreateRespDat
 
     useEffect(() => {
         setOpen(props.open);
+        setInputs(new CreateLinkInputs());
     }, [props.open])
 
     const closeHandler = (resp: CreateRespData = null) => {

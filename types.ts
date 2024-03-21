@@ -15,6 +15,7 @@ export class RespDataList {
     code: number;
     totalLinks: number;
     data: UrlInfo[];
+    version: string;
 }
 
 export class RespLogin {
@@ -224,5 +225,63 @@ export class RedisStats {
         visits.push({ from: 'web', count: this.from_web })
         visits.push({ from: 'unknown', count: this.from_unknown })
         return visits
+    }
+}
+
+export class ListRes {
+    list: UrlInfo[];
+    count: number;
+}
+
+export class ListQuery {
+    limit: number
+    skip: number
+    search: string
+    searchRules: string
+    sortBy: string
+    sortDir: string
+
+constructor(query: Partial<{
+    [key: string]: string | string[];
+}>) {
+    this.limit = Number(query.limit) || 50;
+    const page = Number(query.page) || 1;
+    this.skip = (page - 1) * this.limit;
+    // search
+    this.search = query.search as string;
+    this.searchRules = query.searchRules as string;
+    // sort
+    this.sortBy = query.sortBy as string;
+    this.sortDir = query.sortDir as string;
+}
+}
+
+export class InsertRes {
+    inserted: UrlInfo;
+    error?: {
+        code: number;
+        message: string;
+    }
+}
+
+export class UpdateInput {
+    title: string;
+    link: string;
+    tags: string[];
+}
+
+export class UpdateRes {
+    updated: UrlInfo;
+    error?: {
+        code: number;
+        message: string;
+    }
+}
+
+export class DeleteRes {
+    deleted: UrlInfo;
+    error?: {
+        code: number;
+        message: string;
     }
 }
