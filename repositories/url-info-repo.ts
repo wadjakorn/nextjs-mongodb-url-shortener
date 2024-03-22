@@ -4,6 +4,7 @@ import { kv } from '@vercel/kv';
 import sqlite3 from "sqlite3";
 import { open as sqliteopen, Database as SqliteDatabase } from "sqlite";
 import { urlInfColl } from "../db/url-info-collection";
+import { promises as fs } from 'fs';
 
 export class Err { code?: number; message?: string; }
 
@@ -22,6 +23,10 @@ export async function chooseDB(): Promise<Repository> {
     // sqlite
     console.log('is sqlite')
     r = await getSqliteRepo()
+  } else if (process.env.DB_VER === 'json') {
+    // sqlite
+    console.log('is json')
+    r = new JsonRepo()
   } else {
     // mongo
     console.log('is mongo')
@@ -478,5 +483,47 @@ export class SqliteRepo implements Repository {
         message: 'unknown error',
       }
     };
+  }
+}
+
+export class JsonRepo implements Repository {
+  async readDB(): Promise<UrlInfo[]> {
+    const raw = await fs.readFile(process.cwd() + '/db/json/urls.json', 'utf8');
+    const data: { urls: UrlInfo[] } = JSON.parse(raw);
+    return data.urls
+  }
+  async list(query: ListQuery): Promise<ListRes> {
+    let res: UrlInfo[] = await this.readDB();
+    if (query.search) {
+      const finds = res.filter(each => {
+        const t = each.title.includes(query.search);
+        const tg = each.tags.includes(query.search)
+        if (t || tg) {
+          return true
+        }
+      })
+      res = finds
+    }
+    return {
+      list: res,
+      count: res.length,
+    }
+  }
+  async getByUid(uid: string): Promise<UrlInfo | null> {
+    const urls = await this.readDB();
+    const finds = urls.find(each => each.uid === uid)
+    return finds ?? null
+  }
+  async insert(urlInfo: UrlInfo): Promise<InsertRes> {
+    return null
+  }
+  async validateCreate(input: { link: string, uid: string}): Promise<Err> {
+    return null
+  }
+  async update(uid: string, body: UpdateInput): Promise<UpdateRes> {
+    return null
+  }
+  async delete(uid: string): Promise<DeleteRes> {
+    return null
   }
 }
