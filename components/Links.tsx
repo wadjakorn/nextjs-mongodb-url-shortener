@@ -60,7 +60,7 @@ export default function Links() {
     const [resp, setResp] = useState<RespDataList>(null)
     const [totalPages, setTotalPages] = useState(0)
     const [page, setPage] = useState(Number(router.query.page ?? 1))
-    const [limit, setLimit] = useState(25)
+    const [limit, setLimit] = useState(12)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string>(null)
     const [refresh, setRefresh] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -135,9 +135,10 @@ export default function Links() {
     }
 
     const renderPagination = () => {
-        const maxShow = 2
-        const start = Math.max(1, page - maxShow)
-        const end = Math.min(totalPages, page + maxShow)
+        const maxShow = 9
+        const sideCount = Math.floor(maxShow/2)
+        const start = Math.max(1, page - sideCount)
+        const end = Math.min(totalPages, page + sideCount)
         const pages = []
         for (let i = start; i <= end; i++) {
             pages.push(i)
@@ -337,7 +338,7 @@ export default function Links() {
                 </Table.Body>
             </Table>
             <Container css={{ dflex: 'center', p: 0 ,mt: '20px'}}>
-                <Text size="$md">Showing: {limit} of Total links: {resp.totalLinks}</Text>
+                <Text size="$md">Showing: {resp.start} - {resp.end} of Total links: {resp.totalLinks}</Text>
             </Container>
             <Container css={{ dflex: 'center', p: 0 ,mt: '20px'}}>
                 {renderPagination()}

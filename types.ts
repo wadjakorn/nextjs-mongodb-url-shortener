@@ -16,6 +16,8 @@ export class RespDataList {
     totalLinks: number;
     data: UrlInfo[];
     version: string;
+    start: number;
+    end: number;
 }
 
 export class RespLogin {
@@ -231,6 +233,8 @@ export class RedisStats {
 export class ListRes {
     list: UrlInfo[];
     count: number;
+    start: number;
+    end: number;
 }
 
 export class ListQuery {
@@ -284,4 +288,9 @@ export class DeleteRes {
         code: number;
         message: string;
     }
+}
+
+export class StartEnd {
+    start: number;
+    end: number;
 }

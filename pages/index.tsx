@@ -23,9 +23,9 @@ export default function Home() {
       </Head>
       <Nav />
       <Container>
-        <Text h1 className={styles.title}>
+        {/* <Text h1 className={styles.title}>
           Shorten URLs
-        </Text>
+        </Text> */}
         <TheTable />
       </Container>
     </div>

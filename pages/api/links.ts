@@ -36,13 +36,15 @@ export default async function ListLink(
   const r: Repository = await chooseDB()
  
   try {
-    const { list, count } = await r.list(query)
+    const { list, count, start, end } = await r.list(query)
     const resp: RespDataList = {
       type: "success",
       code: 200,
       totalLinks: count,
       data: list,
       version: DB_VER,
+      start,
+      end,
     }
     response.status(200);
     response.send(resp);

@@ -1,5 +1,5 @@
 import { Collection, Filter, ObjectId, UpdateFilter, WithId } from "mongodb";
-import { DeleteRes, InsertRes, ListQuery, ListRes, RedisStats, UpdateInput, UpdateRes, UpdateUrlInfo, UrlInfo } from "../types";
+import { DeleteRes, InsertRes, ListQuery, ListRes, RedisStats, StartEnd, UpdateInput, UpdateRes, UpdateUrlInfo, UrlInfo } from "../types";
 import { kv } from '@vercel/kv';
 import sqlite3 from "sqlite3";
 import { open as sqliteopen, Database as SqliteDatabase } from "sqlite";
@@ -15,21 +15,22 @@ export interface Repository {
   validateCreate(input: { link: string, uid: string}): Promise<Err>
   update(uid: string, body: UpdateInput): Promise<UpdateRes>
   delete(uid: string): Promise<DeleteRes>
+  getStartEnd(query: ListQuery, filterCount: number): StartEnd
 }
 
 export async function chooseDB(): Promise<Repository> {
   var r: Repository
   if (process.env.DB_VER === 'sqlite') {
     // sqlite
-    console.log('is sqlite')
+    // console.log('is sqlite')
     r = await getSqliteRepo()
   } else if (process.env.DB_VER === 'json') {
     // sqlite
-    console.log('is json')
+    // console.log('is json')
     r = new JsonRepo()
   } else {
     // mongo
-    console.log('is mongo')
+    // console.log('is mongo')
     r = await getMongoRepo()
   }
   return r;
@@ -51,7 +52,42 @@ export async function getSqliteRepo(): Promise<SqliteRepo> {
   return new SqliteRepo(sqlitedb)
 }
 
-export class MongoRepo implements Repository {
+class BaseRepo implements Repository {
+  async list(query: ListQuery): Promise<ListRes> {
+    return null
+  }
+  async getByUid(uid: string): Promise<UrlInfo | null> {
+    return null
+  }
+  async insert(urlInfo: UrlInfo): Promise<InsertRes> {
+    return null
+  }
+  async validateCreate(input: { link: string, uid: string}): Promise<Err> {
+    return null
+  }
+  async update(uid: string, body: UpdateInput): Promise<UpdateRes> {
+    return null
+  }
+  async delete(uid: string): Promise<DeleteRes> {
+    return null
+  }
+  getStartEnd(query: ListQuery, filterCount: number): StartEnd {
+    let start = 1;
+    let end = 25;
+    if (query.skip) {
+      start = query.skip+1
+    }
+
+    if (query.limit > 0) {
+      end = Math.min(filterCount, start + query.limit - 1)
+    }
+    return {
+      start, end
+    }
+  }
+}
+
+export class MongoRepo extends BaseRepo implements Repository {
   private coll: Collection<UrlInfo>
 
   setColl(c: Collection<UrlInfo>): MongoRepo {
@@ -163,9 +199,13 @@ export class MongoRepo implements Repository {
     const list = await prepareFind.skip(query.skip).limit(query.limit).toArray();
     const count = await prepareCount;
 
+    const { start, end } = this.getStartEnd(query, count)
+
     return {
       list,
       count,
+      start,
+      end
     }
   }
 
@@ -228,7 +268,7 @@ export class MongoRepo implements Repository {
   }
 }
 
-export class RedisRepo implements Repository {
+export class RedisRepo extends BaseRepo implements Repository {
 
   async getRawByKey(key: string): Promise<string | null> {
     return kv.get<string>(key);
@@ -302,7 +342,7 @@ export class RedisRepo implements Repository {
   }
 
   async list(query: ListQuery): Promise<ListRes> {
-    return { list: [], count: 0 }
+    return { list: [], count: 0, start: 0, end: 0 }
   }
 
   async update(uid: string, body: UpdateInput): Promise<UpdateRes> {
@@ -326,9 +366,10 @@ export class RedisRepo implements Repository {
   }
 }
 
-export class SqliteRepo implements Repository {
+export class SqliteRepo extends BaseRepo implements Repository {
   private db: SqliteDatabase = null;
   constructor(db: SqliteDatabase) {
+    super()
     this.db = db;
   }
   async getByUid(uid: string, deleted: boolean = false): Promise<UrlInfo | null> {
@@ -405,7 +446,8 @@ export class SqliteRepo implements Repository {
       const jsonData = JSON.parse(data);
       return { ...jsonData, uid} as UrlInfo;
     })
-    return { list, count }
+    const { start, end } = this.getStartEnd(query, count)
+    return { list, count, start, end }
   }
 
   async update(inputUid: string, body: UpdateInput): Promise<UpdateRes> {
@@ -476,26 +518,42 @@ export class SqliteRepo implements Repository {
   }
 }
 
-export class JsonRepo implements Repository {
+export class JsonRepo extends BaseRepo implements Repository {
   async readDB(): Promise<UrlInfo[]> {
     const data: { urls: UrlInfo[] } = (urlsJson as unknown) as { urls: UrlInfo[] };
     return data.urls
   }
   async list(query: ListQuery): Promise<ListRes> {
     let res: UrlInfo[] = await this.readDB();
+    let filtersCount = 0
     if (query.search) {
-      const finds = res.filter(each => {
+      const filters = res.filter(each => {
         const t = each.title.includes(query.search);
         const tg = each.tags.includes(query.search)
         if (t || tg) {
           return true
         }
       })
-      res = finds
+      res = filters
     }
+
+    filtersCount = res.length
+
+    if (query.skip) {
+      res = res.slice(query.skip)
+    }
+
+    if (query.limit > 0) {
+      res = res.slice(0, query.limit)
+    }
+
+    const { start, end } = this.getStartEnd(query, filtersCount)
+
     return {
       list: res,
-      count: res.length,
+      count: filtersCount,
+      start,
+      end
     }
   }
   async getByUid(uid: string): Promise<UrlInfo | null> {
