@@ -4,7 +4,7 @@ import { kv } from '@vercel/kv';
 import sqlite3 from "sqlite3";
 import { open as sqliteopen, Database as SqliteDatabase } from "sqlite";
 import { urlInfColl } from "../db/url-info-collection";
-import { promises as fs } from 'fs';
+import urlsJson from '../db/json/urls.json';
 
 export class Err { code?: number; message?: string; }
 
@@ -330,13 +330,6 @@ export class SqliteRepo implements Repository {
   private db: SqliteDatabase = null;
   constructor(db: SqliteDatabase) {
     this.db = db;
-    //if (!this.db) {
-    //   this.db = await sqliteopen({
-    //     filename: "./urls.db",
-    //     driver: sqlite3.Database,
-    // });
-    // }
-
   }
   async getByUid(uid: string, deleted: boolean = false): Promise<UrlInfo | null> {
     const args = [uid]
@@ -365,9 +358,6 @@ export class SqliteRepo implements Repository {
         }
       }
     }
-    /**
-     * id INTEGER PRIMARY KEY, data JSON
-     */
     const { uid, ...rest } = urlInfo;
     const data = JSON.stringify({
       ...rest,
@@ -488,8 +478,7 @@ export class SqliteRepo implements Repository {
 
 export class JsonRepo implements Repository {
   async readDB(): Promise<UrlInfo[]> {
-    const raw = await fs.readFile(process.cwd() + '/db/json/urls.json', 'utf8');
-    const data: { urls: UrlInfo[] } = JSON.parse(raw);
+    const data: { urls: UrlInfo[] } = (urlsJson as unknown) as { urls: UrlInfo[] };
     return data.urls
   }
   async list(query: ListQuery): Promise<ListRes> {
