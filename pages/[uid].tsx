@@ -5,6 +5,7 @@ import { urlInfColl } from "../db/url-info-collection";
 import { RedisRepo, getSqliteRepo } from "../repositories/url-info-repo";
 import { updateStatsV2 } from "./api/stats";
 import { createCache } from "../cache/create";
+import { chooseDB } from "../repositories/url-info-repo";
  
 export async function getServerSideProps(request: NextApiRequest, response: NextApiResponse) {
   const uid = request.query.uid as string
@@ -13,21 +14,26 @@ export async function getServerSideProps(request: NextApiRequest, response: Next
   let urlInfo: UrlInfo
   let cache: UrlInfo
 
+  const r = await chooseDB()
+  urlInfo = await r.getByUid(uid)
+
   // get cache
-  try {
-    cache = await (new RedisRepo()).getByUid(uid)
-    if (cache) {
-      console.log(`found cache: ${uid}`)
-      urlInfo = cache
-    } else {
-      console.log(`no cache!!!: ${uid}`)
+  if (!urlInfo) {
+    try {
+      cache = await (new RedisRepo()).getByUid(uid)
+      if (cache) {
+        console.log(`found cache: ${uid}`)
+        urlInfo = cache
+      } else {
+        console.log(`no cache!!!: ${uid}`)
+      }
+    } catch (err) {
+      console.log(`error while getting cache: ${err}`)
     }
-  } catch (err) {
-    console.log(`error while getting cache: ${err}`)
   }
 
   // if not found in cache, get from db
-  if (!cache) {
+  if (!urlInfo) {
     const urlInfoCollection = await urlInfColl()
     urlInfo = await urlInfoCollection.findOne({ uid })
     if (urlInfo) {
